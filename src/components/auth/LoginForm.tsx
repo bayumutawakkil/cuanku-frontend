@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
 
@@ -80,9 +81,9 @@ export default function LoginForm() {
 
       <p className="mt-14 text-center text-sm text-slate-500">
         Belum punya akun?{" "}
-        <button className="font-medium text-blue-500 hover:underline">
+        <Link href="/register" className="font-medium text-blue-500 hover:underline">
           Daftar
-        </button>
+        </Link>
       </p>
     </div>
   );
