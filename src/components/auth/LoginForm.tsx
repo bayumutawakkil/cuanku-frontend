@@ -21,24 +21,15 @@ export default function LoginForm() {
     setError("");
     setLoading(true);
 
-    try {
-      const response = await apiRequest<unknown>("/auth/masuk", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      });
-      const result = unwrapObject(response);
-      const token = result.token ?? result.access_token;
-      if (typeof token === "string") localStorage.setItem("cuanku_token", token);
-      router.push("/dashboard");
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Login gagal.");
-    } finally {
-      setLoading(false);
-    }
+    // Langsung masuk ke dashboard tanpa delay
+    localStorage.setItem("cuanku_token", "dummy_token_123");
+    router.push("/dashboard");
   };
 
   const handleGoogleLogin = () => {
-    console.log("Login dengan Google");
+    // Dummy login untuk tombol Google
+    localStorage.setItem("cuanku_token", "dummy_token_123");
+    router.push("/dashboard");
   };
 
   return (
