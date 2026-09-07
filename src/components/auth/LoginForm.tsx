@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log("Login diproses");
+    router.push("/profile");
   };
 
   const handleGoogleLogin = () => {

@@ -1,0 +1,583 @@
+import {
+  LayoutDashboard,
+  ArrowLeftRight,
+  Landmark,
+  ChartNoAxesCombined,
+  Settings,
+  Bell,
+  ChevronDown,
+  Pencil,
+  User,
+  BriefcaseBusiness,
+  ShieldCheck,
+} from "lucide-react";
+
+export default function ProfileContent() {
+  const menuItems = [
+    {
+      name: "Dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Transaksi",
+      icon: ArrowLeftRight,
+    },
+    {
+      name: "Sarang",
+      icon: Landmark,
+    },
+    {
+      name: "Prediksi Bisnis",
+      icon: ChartNoAxesCombined,
+    },
+    {
+      name: "Pengaturan",
+      icon: Settings,
+    },
+  ];
+
+  const personalData = [
+    ["Nama Lengkap", "Rendi Wahyudi"],
+    ["Email", "rendywahyudi@gmail.com"],
+    ["Nomor Telepon", "+628"],
+  ];
+
+  const businessData = [
+    ["Nama Usaha", "Minimarket Jaya Sentosa"],
+    ["Kategori Usaha", "Minimarket"],
+    [
+      "Alamat",
+      "Jl. Melati No. 12, Kec. Padang Barat, Kota Padang, Sumatera Barat",
+    ],
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#eaf2fb]">
+
+      {/* ================= SIDEBAR ================= */}
+
+      <aside
+        className="
+          fixed left-0 top-0 hidden h-screen w-[230px]
+          flex-col bg-gradient-to-b
+          from-[#f8fbff]
+          via-[#e9f2fc]
+          to-[#76a9e6]
+          p-6 lg:flex
+        "
+      >
+        {/* Logo */}
+
+        <div className="flex items-center gap-2">
+          <div
+            className="
+              flex h-8 w-8 items-center justify-center
+              rounded-full bg-[#ffd36d]
+              text-[10px] font-bold text-[#9c6d17]
+            "
+          >
+            RP
+          </div>
+
+          <h1 className="text-2xl font-bold text-[#26374e]">
+            Cuan<span className="text-[#c8952f]">Ku</span>
+          </h1>
+        </div>
+
+        {/* Menu */}
+
+        <nav className="mt-10 space-y-5">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.name}
+                className="
+                  flex w-full items-center gap-3
+                  text-sm font-medium text-[#344257]
+                  transition hover:text-[#4f88c9]
+                "
+              >
+                <Icon size={16} />
+
+                {item.name}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Business Card */}
+
+        <div className="mt-auto border-t border-white/30 pt-4">
+          <div
+            className="
+              rounded-xl bg-[#eaf3ff]/90 p-4
+              shadow-[0_8px_20px_rgba(44,92,145,0.12)]
+            "
+          >
+            <div className="flex items-center gap-3">
+
+              <div className="h-8 w-8 rounded-full bg-slate-300" />
+
+              <div>
+                <h3 className="text-sm font-semibold text-[#33445a]">
+                  Minimarket Jaya Sentosa
+                </h3>
+
+                <p className="text-xs text-slate-500">
+                  Owner: Rendi Wahyudi
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </aside>
+
+
+      {/* ================= MAIN ================= */}
+
+      <div className="lg:ml-[230px]">
+
+        {/* HEADER */}
+
+        <header
+          className="
+            sticky top-0 z-30
+            flex h-[70px]
+            items-center justify-between
+            bg-[#f8f8f8]
+            px-5
+            shadow-[0_2px_10px_rgba(0,0,0,0.08)]
+            md:px-8
+          "
+        >
+          <h1 className="text-2xl font-bold text-[#243248]">
+            Profile
+          </h1>
+
+          <div className="flex items-center gap-5">
+
+            {/* Notification */}
+
+            <button
+              className="
+                relative flex h-10 w-10
+                items-center justify-center
+                rounded-full bg-[#edf2f8]
+                text-[#40536d]
+              "
+            >
+              <Bell size={18} />
+
+              <span
+                className="
+                  absolute right-2 top-2
+                  h-1.5 w-1.5
+                  rounded-full bg-red-400
+                "
+              />
+            </button>
+
+
+            {/* User */}
+
+            <button className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-full bg-slate-300" />
+
+              <span className="hidden text-sm font-medium text-[#40536d] md:block">
+                Rendi Wahyudi
+              </span>
+
+              <ChevronDown size={16} />
+            </button>
+
+          </div>
+        </header>
+
+
+        {/* PAGE CONTENT */}
+
+        <main className="p-4 md:p-6 lg:p-8">
+
+          <div className="mx-auto max-w-[1400px]">
+
+            {/* PROFILE HERO */}
+
+            <section
+              className="
+                flex flex-col gap-6
+                rounded-2xl bg-white/80 p-6
+                shadow-[0_10px_30px_rgba(74,113,158,0.12)]
+                md:flex-row
+                md:items-center
+                md:justify-between
+              "
+            >
+              <div className="flex items-center gap-6">
+
+                {/* Avatar */}
+
+                <div className="relative">
+                  <div className="h-24 w-24 rounded-full bg-[#dbe7f5]" />
+
+                  <div
+                    className="
+                      absolute bottom-0 right-0
+                      h-7 w-7
+                      rounded-full
+                      border-2 border-white
+                      bg-[#5b91cf]
+                    "
+                  />
+                </div>
+
+
+                {/* Profile Info */}
+
+                <div>
+                  <h2 className="text-2xl font-bold text-[#34445b]">
+                    Rendi Wahyudi
+                  </h2>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+
+                    <span
+                      className="
+                        rounded-full
+                        bg-[#e5eef8]
+                        px-4 py-1
+                        text-xs font-semibold
+                        text-[#4c6685]
+                      "
+                    >
+                      Owner
+                    </span>
+
+                    <span className="text-sm text-[#34445b]">
+                      Minimarket Jaya Sentosa
+                    </span>
+
+                  </div>
+                </div>
+              </div>
+
+
+              {/* Edit */}
+
+              <button
+                className="
+                  flex items-center justify-center gap-2
+                  rounded-lg
+                  bg-[#5c91ce]
+                  px-5 py-2.5
+                  text-sm font-semibold text-white
+                  transition hover:bg-[#4a7fb9]
+                "
+              >
+                <Pencil size={15} />
+
+                Edit Profile
+              </button>
+
+            </section>
+
+
+            {/* GRID */}
+
+            <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
+
+              {/* LEFT */}
+
+              <div className="space-y-5">
+
+                {/* PERSONAL */}
+
+                <section
+                  className="
+                    rounded-2xl
+                    bg-white/80
+                    p-6
+                    shadow-[0_8px_25px_rgba(74,113,158,0.1)]
+                  "
+                >
+                  <div className="flex items-center gap-4">
+
+                    <div
+                      className="
+                        flex h-12 w-12
+                        items-center justify-center
+                        rounded-full
+                        bg-[#e7eff8]
+                        text-[#35598b]
+                      "
+                    >
+                      <User size={22} />
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-[#40516a]">
+                        Informasi Pribadi
+                      </h3>
+
+                      <p className="mt-1 text-xs text-slate-500">
+                        Perbarui informasi pribadi pemilik akun
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  <div className="mt-4 border-t border-slate-200">
+
+                    {personalData.map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="
+                          grid grid-cols-2 gap-4
+                          border-b border-slate-200
+                          py-4 text-xs
+                        "
+                      >
+                        <span className="font-medium text-slate-500">
+                          {label}
+                        </span>
+
+                        <span className="text-right text-slate-600">
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+
+                  </div>
+                </section>
+
+
+                {/* PREFERENCES */}
+
+                <section
+                  className="
+                    rounded-2xl bg-white/80 p-6
+                    shadow-[0_8px_25px_rgba(74,113,158,0.1)]
+                  "
+                >
+                  <div className="flex items-center gap-4">
+
+                    <div
+                      className="
+                        flex h-12 w-12
+                        items-center justify-center
+                        rounded-full
+                        bg-[#e7eff8]
+                        text-[#35598b]
+                      "
+                    >
+                      <Settings size={22} />
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-[#40516a]">
+                        Preferensi Akun
+                      </h3>
+
+                      <p className="mt-1 text-xs text-slate-500">
+                        Sesuaikan pengaturan akun Anda.
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  <div className="mt-4 border-t border-slate-200">
+
+                    <div className="border-b border-slate-200 py-4">
+
+                      <h4 className="text-xs font-medium text-slate-600">
+                        Notifikasi
+                      </h4>
+
+                      <p className="mt-1 text-xs text-slate-500">
+                        Terima notifikasi transaksi, laporan dan stok melalui
+                        email dan aplikasi.
+                      </p>
+
+                    </div>
+
+
+                    <div
+                      className="
+                        flex items-center
+                        justify-between
+                        gap-4 py-4
+                      "
+                    >
+                      <div>
+                        <h4 className="text-xs font-medium text-slate-600">
+                          Bahasa
+                        </h4>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                          Pilih bahasa yang anda gunakan.
+                        </p>
+                      </div>
+
+                      <button
+                        className="
+                          rounded-full
+                          bg-[#e7eff8]
+                          px-4 py-2
+                          text-xs font-medium
+                          text-[#5b6f87]
+                        "
+                      >
+                        Bahasa Indonesia
+                      </button>
+
+                    </div>
+
+                  </div>
+                </section>
+
+              </div>
+
+
+              {/* RIGHT */}
+
+              <div className="space-y-5">
+
+                {/* BUSINESS */}
+
+                <section
+                  className="
+                    rounded-2xl bg-white/80 p-6
+                    shadow-[0_8px_25px_rgba(74,113,158,0.1)]
+                  "
+                >
+                  <div className="flex items-center gap-4">
+
+                    <div
+                      className="
+                        flex h-12 w-12
+                        items-center justify-center
+                        rounded-full
+                        bg-[#e7eff8]
+                        text-[#35598b]
+                      "
+                    >
+                      <BriefcaseBusiness size={22} />
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-[#40516a]">
+                        Informasi Bisnis
+                      </h3>
+
+                      <p className="mt-1 text-xs text-slate-500">
+                        Data usaha yang Anda kelola
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  <div className="mt-4 border-t border-slate-200">
+
+                    {businessData.map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="
+                          grid grid-cols-2 gap-4
+                          border-b border-slate-200
+                          py-4 text-xs
+                        "
+                      >
+                        <span className="font-medium text-slate-500">
+                          {label}
+                        </span>
+
+                        <span className="text-right leading-relaxed text-slate-600">
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+
+                  </div>
+                </section>
+
+
+                {/* SECURITY */}
+
+                <section
+                  className="
+                    rounded-2xl bg-white/80 p-4
+                    shadow-[0_8px_25px_rgba(74,113,158,0.1)]
+                  "
+                >
+                  <div
+                    className="
+                      flex items-center gap-5
+                      rounded-lg
+                      bg-gradient-to-r
+                      from-[#edf4fb]
+                      to-[#dbe8f6]
+                      p-5
+                    "
+                  >
+
+                    <div
+                      className="
+                        flex h-12 w-12
+                        items-center justify-center
+                        rounded-full
+                        bg-[#dbe7f5]
+                        text-[#35598b]
+                      "
+                    >
+                      <ShieldCheck size={21} />
+                    </div>
+
+
+                    <div>
+                      <h3 className="font-semibold text-[#40516a]">
+                        Data Anda Aman
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                        Kami berkomitmen untuk menjaga keamanan data pribadi
+                        dan bisnis Anda.
+                      </p>
+                    </div>
+
+                  </div>
+
+
+                  <button
+                    className="
+                      mt-5 w-full
+                      rounded-lg
+                      bg-[#5c91ce]
+                      py-3
+                      text-xs font-semibold text-white
+                      transition
+                      hover:bg-[#4a7fb9]
+                    "
+                  >
+                    Simpan Perubahan
+                  </button>
+
+                </section>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </main>
+
+      </div>
+
+    </div>
+  );
+}
