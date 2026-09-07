@@ -1,9 +1,18 @@
+import type { ReactNode } from "react";
+
+type InputFieldProps = {
+  label: string;
+  type?: string;
+  placeholder?: string;
+  icon?: ReactNode;
+};
+
 export default function InputField({
   label,
   type = "text",
   placeholder,
   icon,
-}) {
+}: InputFieldProps) {
   return (
     <div className="mb-5">
       <label className="mb-2 block text-sm font-medium text-slate-500">

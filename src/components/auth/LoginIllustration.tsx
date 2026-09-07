@@ -1,6 +1,6 @@
 export default function LoginIllustration() {
   return (
-    <section className="relative hidden min-h-full w-1/2 overflow-hidden bg-gradient-to-r from-[#2F28FF] to-[#8A59FD] p-8 text-white lg:flex lg:flex-col">
+    <section className="relative hidden min-h-full w-1/2 overflow-hidden bg-gradient-to-b from-blue-300 via-blue-900 to-indigo-950 p-8 text-white lg:flex lg:flex-col">
       
       {/* Decorative Shape Atas */}
       <div
