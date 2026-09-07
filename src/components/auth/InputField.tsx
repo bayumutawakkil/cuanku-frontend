@@ -5,6 +5,8 @@ type InputFieldProps = {
   type?: string;
   placeholder?: string;
   icon?: ReactNode;
+  value?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 export default function InputField({
@@ -12,6 +14,8 @@ export default function InputField({
   type = "text",
   placeholder,
   icon,
+  value,
+  onChange,
 }: InputFieldProps) {
   return (
     <div className="mb-5">
@@ -23,6 +27,8 @@ export default function InputField({
         <input
           type={type}
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
           className="
             w-full
             rounded-full

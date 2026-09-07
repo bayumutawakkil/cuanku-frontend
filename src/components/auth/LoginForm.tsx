@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
+import Button from "../ui/Button";
 
 export default function LoginForm() {
   const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,12 +37,16 @@ export default function LoginForm() {
         <InputField
           label="♟ Username/Email"
           placeholder="rendiwahyudi@gmail.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
         />
 
         <InputField
           label="♧ Kata Sandi"
           type="password"
           placeholder="••••••••"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
           icon="⌁"
         />
 
@@ -62,21 +69,21 @@ export default function LoginForm() {
           </button>
         </div>
 
-        <button
+        <Button
           type="submit"
-          className="w-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 py-3 font-semibold text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)] transition hover:scale-[1.01] hover:shadow-[0_10px_25px_rgba(37,99,235,0.45)] active:scale-[0.99]"
+          className="bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)] hover:scale-[1.01] hover:shadow-[0_10px_25px_rgba(37,99,235,0.45)] active:scale-[0.99]"
         >
           Masuk
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={handleGoogleLogin}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/70 py-3 font-semibold text-slate-700 shadow-md transition hover:bg-white hover:shadow-lg"
+          className="mt-3 gap-2 border border-slate-200 bg-white/70 text-slate-700 shadow-md hover:bg-white hover:shadow-lg"
         >
           <GoogleIcon />
           Masuk dengan akun Google
-        </button>
+        </Button>
       </form>
 
       <p className="mt-14 text-center text-sm text-slate-500">
