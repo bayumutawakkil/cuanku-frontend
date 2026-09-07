@@ -15,6 +15,13 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Backend API is expected at `http://localhost:3000/api`. Because that port is used by the backend, run the frontend on another port:
+
+```bash
+npm run dev -- -p 3001
+```
+
+Open [http://localhost:3001](http://localhost:3001) to see the result. To use another API host, set `NEXT_PUBLIC_API_URL` (for example, `http://localhost:3000/api`) in `.env.local`.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
@@ -24,8 +31,6 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 

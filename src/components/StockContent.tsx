@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Product } from "../types";
+import { apiRequest, unwrapList } from "../lib/api";
 
 const initial: Product[] = [
   { id: 1, name: "Kopi Arabika Toraja 250g", stock: 4, unit: "packs", buyPrice: 45000, sellPrice: 75000, status: "Kritis" },
@@ -18,8 +19,30 @@ const money = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
 
 export default function StockContent() {
   const [products, setProducts] = useState(initial);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    apiRequest<unknown>("/transaksi/stok")
+      .then((response) => {
+        const products = unwrapList<Record<string, unknown>>(response, ["products", "produk", "stocks", "stok", "items"]);
+        if (products.length) {
+          setProducts(products.map((item, index) => ({
+            id: Number(item.id ?? index),
+            name: String(item.name ?? item.nama ?? item.product_name ?? "-"),
+            stock: Number(item.stock ?? item.quantity ?? item.stok ?? 0),
+            unit: String(item.unit ?? item.satuan ?? "unit"),
+            buyPrice: Number(item.buyPrice ?? item.buy_price ?? item.harga_beli ?? 0),
+            sellPrice: Number(item.sellPrice ?? item.sell_price ?? item.harga_jual ?? 0),
+            status: (item.status ?? "Aman") as Product["status"],
+          })));
+        }
+      })
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat stok."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())), [products, search]);
 
@@ -55,7 +78,7 @@ export default function StockContent() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm">
             <thead className="bg-[#F4F9FF] text-slate-500"><tr>{["Nama Produk","Sisa Stok","Harga Beli","Harga Jual","Margin","Aksi"].map(x=><th key={x} className="px-5 py-4">{x}</th>)}</tr></thead>
-            <tbody>{filtered.map(p => <tr key={p.id} className="border-t border-slate-100">
+            <tbody>{loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Memuat stok...</td></tr>}{error && !loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-red-600">{error}</td></tr>}{filtered.map(p => <tr key={p.id} className="border-t border-slate-100">
               <td className="px-5 py-4 font-medium">{p.name}</td><td className="px-5 py-4">{p.stock} {p.unit}</td><td className="px-5 py-4">{money(p.buyPrice)}</td><td className="px-5 py-4">{money(p.sellPrice)}</td>
               <td className="px-5 py-4 font-bold text-emerald-600">+{Math.round((p.sellPrice/p.buyPrice-1)*100)}%</td>
               <td className="px-5 py-4"><button className="mr-2 p-2 text-[#0049A8]"><Pencil size={16}/></button><button onClick={() => setProducts(products.filter(x=>x.id!==p.id))} className="p-2 text-red-500"><Trash2 size={16}/></button></td>

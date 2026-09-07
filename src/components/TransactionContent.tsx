@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, Pencil, Trash2 } from "lucide-react";
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Transaction } from "../types";
+import { apiRequest, unwrapList } from "../lib/api";
 
 const initialData: Transaction[] = [
   { id: 1, date: "24 Jan 2026", type: "Pemasukan", category: "Kopi", note: "Penjualan Kopi Susu Gula Aren 20 botol", amount: 400000 },
@@ -18,9 +19,30 @@ const money = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
 
 export default function TransactionContent() {
   const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [type, setType] = useState("Semua");
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    apiRequest<unknown>("/transaksi")
+      .then((response) => {
+        const transactions = unwrapList<Record<string, unknown>>(response, ["transactions", "transaksi", "items"]);
+        if (transactions.length) {
+          setData(transactions.map((item, index) => ({
+            id: Number(item.id ?? index),
+            date: String(item.date ?? item.tanggal ?? ""),
+            type: (item.type ?? item.transaction_type ?? item.jenis) as Transaction["type"],
+            category: String(item.category ?? item.kategori ?? "-"),
+            note: String(item.note ?? item.description ?? item.catatan ?? "-"),
+            amount: Number(item.amount ?? item.nominal ?? 0),
+          })));
+        }
+      })
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat transaksi."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(
     () => data.filter((t) =>
@@ -30,7 +52,7 @@ export default function TransactionContent() {
     [data, search, type]
   );
 
-  const addTransaction = (e: React.FormEvent<HTMLFormElement>) => {
+  const addTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const item: Transaction = {
@@ -41,8 +63,13 @@ export default function TransactionContent() {
       note: String(form.get("note")),
       amount: Number(form.get("amount")),
     };
-    setData((prev) => [item, ...prev]);
-    setOpen(false);
+    try {
+      await apiRequest("/transaksi", { method: "POST", body: JSON.stringify(item) });
+      setData((prev) => [item, ...prev]);
+      setOpen(false);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Gagal menyimpan transaksi.");
+    }
   };
 
   return (
@@ -72,6 +99,8 @@ export default function TransactionContent() {
             <tr>{["Tanggal", "Jenis", "Kategori", "Catatan", "Nominal", "Aksi"].map(h => <th key={h} className="px-5 py-4 font-semibold">{h}</th>)}</tr>
           </thead>
           <tbody>
+            {loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Memuat transaksi...</td></tr>}
+            {error && !loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-red-600">{error}</td></tr>}
             {filtered.map((t) => (
               <tr key={t.id} className="border-t border-slate-100">
                 <td className="px-5 py-4">{t.date}</td>
