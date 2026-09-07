@@ -1,3 +1,5 @@
+"use client";
+
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -5,31 +7,40 @@ import {
   ChartNoAxesCombined,
   Settings,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const menuItems = [
   {
     name: "Dashboard",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     name: "Transaksi",
+    href: "/transactions",
     icon: ArrowLeftRight,
   },
   {
-    name: "Sarang",
+    name: "Stok Barang",
+    href: "/stock",
     icon: Landmark,
   },
   {
     name: "Prediksi Bisnis",
+    href: "/prediction",
     icon: ChartNoAxesCombined,
   },
   {
     name: "Pengaturan",
+    href: "/settings",
     icon: Settings,
   },
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <aside
       className="
@@ -81,9 +92,10 @@ export default function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <button
+            <Link
               key={item.name}
-              className="
+              href={item.href}
+              className={`
                 flex
                 w-full
                 items-center
@@ -91,15 +103,18 @@ export default function Sidebar() {
                 text-left
                 text-sm
                 font-medium
-                text-[#344257]
+                ${pathname === item.href ? "bg-white/70 text-[#315f9d]" : "text-[#344257]"}
+                rounded-lg
+                px-3
+                py-2
                 transition
                 hover:text-[#4f88c9]
-              "
+              `}
             >
               <Icon size={16} strokeWidth={2} />
 
               {item.name}
-            </button>
+            </Link>
           );
         })}
       </nav>
