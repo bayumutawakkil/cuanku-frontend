@@ -1,12 +1,8 @@
 "use client";
 
-<<<<<<< HEAD
-import { useMemo, useState } from "react";
-import { Search, Plus, PencilLine, Trash2, Calendar, ChevronLeft, ChevronRight, } from "lucide-react";
-=======
 import { useEffect, useMemo, useState } from "react";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
->>>>>>> origin/master
+import { Search, Plus, PencilLine, Trash2, Calendar, ChevronLeft, ChevronRight, } from "lucide-react";
+
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Transaction } from "../types";
@@ -66,11 +62,10 @@ export default function TransactionContent() {
     [data, search, type, category]
   );
 
-<<<<<<< HEAD
   const handleEdit = (transaction: Transaction) => {
-  setEditingTransaction(transaction);
-  setTransactionType(transaction.type);
-  setOpen(true);
+    setEditingTransaction(transaction);
+    setTransactionType(transaction.type);
+    setOpen(true);
   };
 
   const formatDateForInput = (date: string) => {
@@ -94,10 +89,7 @@ export default function TransactionContent() {
     return `${year}-${months[month]}-${day.padStart(2, "0")}`;
   };
 
-  const addTransaction = (e: React.FormEvent<HTMLFormElement>) => {
-=======
   const addTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
->>>>>>> origin/master
     e.preventDefault();
 
     const form = new FormData(e.currentTarget);
@@ -110,31 +102,33 @@ export default function TransactionContent() {
       note: String(form.get("note")),
       amount: Number(form.get("amount")),
     };
-<<<<<<< HEAD
-
-    if (editingTransaction) {
-      // EDIT
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === editingTransaction.id ? transaction : item
-        )
-      );
-    } else {
-      // TAMBAH
-      setData((prev) => [transaction, ...prev]);
-    }
-
-    setEditingTransaction(null);
-    setOpen(false);
-=======
     try {
-      await apiRequest("/transaksi", { method: "POST", body: JSON.stringify(item) });
-      setData((prev) => [item, ...prev]);
+      await apiRequest("/transaksi", {
+        method: "POST",
+        body: JSON.stringify(transaction),
+      });
+
+      if (editingTransaction) {
+        // EDIT
+        setData((prev) =>
+          prev.map((item) =>
+            item.id === editingTransaction.id ? transaction : item
+          )
+        );
+      } else {
+        // TAMBAH
+        setData((prev) => [transaction, ...prev]);
+      }
+
+      setEditingTransaction(null);
       setOpen(false);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Gagal menyimpan transaksi.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Gagal menyimpan transaksi."
+      );
     }
->>>>>>> origin/master
   };
 
   return (
