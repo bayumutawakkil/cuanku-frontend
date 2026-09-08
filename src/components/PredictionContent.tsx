@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { BrainCircuit, PackageCheck, TrendingUp } from "lucide-react";
+import { apiRequest, unwrapObject } from "../lib/api";
 
 const restock = [
   ["Susu UHT Full Cream 1L", "Habis dlm 2 hari", "40 Liter", "Urgent"],
@@ -8,6 +12,18 @@ const restock = [
 ];
 
 export default function PredictionContent() {
+  const [prediction, setPrediction] = useState<Record<string, unknown>>({});
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiRequest<unknown>("/dashboard/predict-revenue")
+      .then((response) => setPrediction(unwrapObject(response)))
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat prediksi."));
+  }, []);
+
+  const estimatedRevenue = prediction.estimatedRevenue ?? prediction.estimated_revenue;
+  const insight = prediction.insight ?? prediction.ai_insight;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
@@ -20,11 +36,13 @@ export default function PredictionContent() {
         </div>
         <div className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-500">Estimasi Pendapatan Bulan Depan</p>
-          <h2 className="mt-2 text-3xl font-black text-[#0049A8]">Rp 45.500.000</h2>
+          <h2 className="mt-2 text-3xl font-black text-[#0049A8]">{estimatedRevenue ? String(estimatedRevenue) : "Rp 45.500.000"}</h2>
           <p className="mt-2 text-sm font-semibold text-emerald-600">+12.5% dari rata-rata bulan ini</p>
-          <div className="mt-6 rounded-xl bg-[#F4F9FF] p-4"><p className="text-sm font-bold text-[#0049A8]">Insight CuanKu AI</p><p className="mt-2 text-sm leading-6 text-slate-600">Tren menunjukkan peningkatan konsisten dalam 3 bulan terakhir. Permintaan untuk Kopi Susu Gula Aren diperkirakan melonjak sebesar 18% di akhir pekan dikarenakan acara komunitas lokal di sekitar ruko Anda.</p></div>
+          <div className="mt-6 rounded-xl bg-[#F4F9FF] p-4"><p className="text-sm font-bold text-[#0049A8]">Insight CuanKu AI</p><p className="mt-2 text-sm leading-6 text-slate-600">{insight ? String(insight) : "Tren menunjukkan peningkatan konsisten dalam 3 bulan terakhir. Permintaan untuk Kopi Susu Gula Aren diperkirakan melonjak sebesar 18% di akhir pekan dikarenakan acara komunitas lokal di sekitar ruko Anda."}</p></div>
         </div>
       </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="rounded-2xl border border-[#E6EDF6] bg-white shadow-sm">
         <div className="flex items-center gap-3 border-b p-6"><PackageCheck className="text-[#0049A8]"/><div><h2 className="font-bold">Rekomendasi Restock Pintar</h2><p className="text-sm text-slate-500">Rekomendasi berdasarkan prediksi kebutuhan stok</p></div></div>

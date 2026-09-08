@@ -6,21 +6,30 @@ import Link from "next/link";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
 import Button from "../ui/Button";
+import { apiRequest, unwrapObject } from "../../lib/api";
 
 export default function LoginForm() {
   const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
+    setLoading(true);
 
-    router.push("/profile");
+    // Langsung masuk ke dashboard tanpa delay
+    localStorage.setItem("cuanku_token", "dummy_token_123");
+    router.push("/dashboard");
   };
 
   const handleGoogleLogin = () => {
-    console.log("Login dengan Google");
+    // Dummy login untuk tombol Google
+    localStorage.setItem("cuanku_token", "dummy_token_123");
+    router.push("/dashboard");
   };
 
   return (
@@ -71,10 +80,13 @@ export default function LoginForm() {
 
         <Button
           type="submit"
+          disabled={loading}
           className="bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)] hover:scale-[1.01] hover:shadow-[0_10px_25px_rgba(37,99,235,0.45)] active:scale-[0.99]"
         >
-          Masuk
+          {loading ? "Memproses..." : "Masuk"}
         </Button>
+
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
         <Button
           type="button"
