@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Search, Bell, ChevronDown } from "lucide-react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 
 type DashboardLayoutProps = {
@@ -9,6 +10,18 @@ type DashboardLayoutProps = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const pathname = usePathname();
+
+  const pageTitles: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/transactions": "Transaksi",
+    "/stock": "Stok Barang",
+    "/prediction": "Prediksi Bisnis",
+    "/settings": "Pengaturan",
+    "/profile": "Profil",
+  };
+
+  const pageTitle = pageTitles[pathname] ?? "Dashboard";
   return (
     <div className="min-h-screen bg-[#F4F9FF] text-[#001229]">
       <Sidebar />
@@ -16,7 +29,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#E6EDF6] bg-white px-5 lg:px-6">
           {/* Judul halaman */}
           <h1 className="text-2xl font-bold text-[#001229]">
-            Transaksi
+            {pageTitle}
           </h1>
 
           {/* Bagian kanan */}

@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import InputField from "./InputField";
 import Button from "../ui/Button";
 import GoogleIcon from "../ui/GoogleIcon";
+import { apiRequest, unwrapObject } from "../../lib/api";
 
 export default function RegisterForm() {
     const [name, setName] = useState("");
@@ -11,17 +12,50 @@ export default function RegisterForm() {
     const [organization, setOrganization] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        console.log({
-            name,
-            email,
-            organization,
-            password,
-            confirmPassword,
-        });
+        if (password !== confirmPassword) {
+            setError("Konfirmasi kata sandi tidak sama.");
+            return;
+        }
+
+        setError("");
+        setLoading(true);
+
+        try {
+            const response = await apiRequest<unknown>("/auth/masuk", {
+                method: "POST",
+                body: JSON.stringify({
+                    name,
+                    email,
+                    organization,
+                    password,
+                    password_confirmation: confirmPassword,
+                    action: "register",
+                }),
+            });
+
+            const result = unwrapObject(response);
+            const token = result.token ?? result.access_token;
+
+            if (typeof token === "string") {
+                localStorage.setItem("cuanku_token", token);
+            }
+
+            window.location.href = token ? "/dashboard" : "/login";
+        } catch (requestError) {
+            setError(
+                requestError instanceof Error
+                    ? requestError.message
+                    : "Pendaftaran gagal."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGoogleRegister = () => {
@@ -96,12 +130,19 @@ export default function RegisterForm() {
                     value={confirmPassword}
                     onChange={(event) => setConfirmPassword(event.target.value)}
                 />
+
+                {error && (
+                    <p className="mb-4 text-sm text-red-500">
+                        {error}
+                    </p>
+                )}
                 
                 <Button 
                     type="submit"
+                    disabled={loading}
                     className="bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-md hover:shadow-lg"
                 >
-                    Daftar
+                    {loading ? "Mendaftarkan..." : "Daftar"}
                 </Button>
             </form>
 
