@@ -66,11 +66,7 @@ export default function RegisterRoute() {
         <RegisterIllustration />
 
         <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-sky-200 px-6 py-12 sm:px-12 lg:w-1/2">
-          <RegisterForm
-            onSubmit={handleSubmit}
-            loading={loading}
-            error={error}
-          />
+          <RegisterForm/>
         </div>
       </section>
     </main>
