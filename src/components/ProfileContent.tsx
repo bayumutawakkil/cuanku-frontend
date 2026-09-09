@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   User,
 } from "lucide-react";
+
 import Sidebar from "./layout/Sidebar";
 
 export default function ProfileContent() {
@@ -46,6 +47,7 @@ export default function ProfileContent() {
             md:px-8
           "
         >
+          {/* Judul halaman */}
           <h1 className="text-2xl font-bold text-[#243248]">
             Profile
           </h1>
@@ -73,7 +75,6 @@ export default function ProfileContent() {
               />
             </button>
 
-
             {/* User */}
 
             <button className="flex items-center gap-2">
@@ -89,31 +90,37 @@ export default function ProfileContent() {
           </div>
         </header>
 
-
         {/* PAGE CONTENT */}
 
-        <main className="p-4 md:p-6 lg:p-8">
+        <main className="p-4 md:p-5 lg:p-6">
 
-          <div className="mx-auto max-w-[1400px]">
+          <div className="mx-auto max-w-[1200px]">
+
+            {/* PAGE TITLE */}
+            <div className="mb-4">
+              <h1 className="text-xl font-bold text-[#243248]">
+              </h1>
+
+            </div>
 
             {/* PROFILE HERO */}
 
             <section
               className="
                 flex flex-col gap-6
-                rounded-2xl bg-white/80 p-6
+                rounded-2xl bg-[#EAF4FF] p-5
                 shadow-[0_10px_30px_rgba(74,113,158,0.12)]
                 md:flex-row
                 md:items-center
                 md:justify-between
               "
             >
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
 
                 {/* Avatar */}
 
                 <div className="relative">
-                  <div className="h-24 w-24 rounded-full bg-[#dbe7f5]" />
+                  <div className="h-20 w-20 rounded-full bg-[#dbe7f5]" />
 
                   <div
                     className="
@@ -130,7 +137,7 @@ export default function ProfileContent() {
                 {/* Profile Info */}
 
                 <div>
-                  <h2 className="text-2xl font-bold text-[#34445b]">
+                  <h2 className="text-xl font-bold text-[#34445b]">
                     Rendi Wahyudi
                   </h2>
 
@@ -163,10 +170,10 @@ export default function ProfileContent() {
                 className="
                   flex items-center justify-center gap-2
                   rounded-lg
-                  bg-[#5c91ce]
+                  bg-[#4F91E8] 
                   px-5 py-2.5
                   text-sm font-semibold text-white
-                  transition hover:bg-[#4a7fb9]
+                  transition hover:bg-[#3F82D8]
                 "
               >
                 <Pencil size={15} />
@@ -179,7 +186,7 @@ export default function ProfileContent() {
 
             {/* GRID */}
 
-            <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
 
               {/* LEFT */}
 
@@ -189,9 +196,9 @@ export default function ProfileContent() {
 
                 <section
                   className="
-                    rounded-2xl
-                    bg-white/80
-                    p-6
+                    rounded-xl
+                    bg-white
+                    p-5
                     shadow-[0_8px_25px_rgba(74,113,158,0.1)]
                   "
                 >
@@ -199,14 +206,14 @@ export default function ProfileContent() {
 
                     <div
                       className="
-                        flex h-12 w-12
+                        flex h-10 w-10
                         items-center justify-center
                         rounded-full
                         bg-[#e7eff8]
                         text-[#35598b]
                       "
                     >
-                      <User size={22} />
+                      <User size={20} />
                     </div>
 
                     <div>
@@ -230,7 +237,7 @@ export default function ProfileContent() {
                         className="
                           grid grid-cols-2 gap-4
                           border-b border-slate-200
-                          py-4 text-xs
+                          py-3 text-xs
                         "
                       >
                         <span className="font-medium text-slate-500">
@@ -251,7 +258,7 @@ export default function ProfileContent() {
 
                 <section
                   className="
-                    rounded-2xl bg-white/80 p-6
+                    rounded-xl bg-white p-5
                     shadow-[0_8px_25px_rgba(74,113,158,0.1)]
                   "
                 >
@@ -259,14 +266,14 @@ export default function ProfileContent() {
 
                     <div
                       className="
-                        flex h-12 w-12
+                        flex h-10 w-10
                         items-center justify-center
                         rounded-full
                         bg-[#e7eff8]
                         text-[#35598b]
                       "
                     >
-                      <Settings size={22} />
+                      <Settings size={20} />
                     </div>
 
                     <div>
@@ -343,7 +350,7 @@ export default function ProfileContent() {
 
                 <section
                   className="
-                    rounded-2xl bg-white/80 p-6
+                    rounded-xl bg-white p-5
                     shadow-[0_8px_25px_rgba(74,113,158,0.1)]
                   "
                 >
@@ -351,14 +358,14 @@ export default function ProfileContent() {
 
                     <div
                       className="
-                        flex h-12 w-12
+                        flex h-10 w-10
                         items-center justify-center
                         rounded-full
                         bg-[#e7eff8]
                         text-[#35598b]
                       "
                     >
-                      <BriefcaseBusiness size={22} />
+                      <BriefcaseBusiness size={20} />
                     </div>
 
                     <div>
@@ -382,7 +389,7 @@ export default function ProfileContent() {
                         className="
                           grid grid-cols-2 gap-4
                           border-b border-slate-200
-                          py-4 text-xs
+                          py-3 text-xs
                         "
                       >
                         <span className="font-medium text-slate-500">
@@ -403,7 +410,7 @@ export default function ProfileContent() {
 
                 <section
                   className="
-                    rounded-2xl bg-white/80 p-4
+                    rounded-xl bg-white p-5
                     shadow-[0_8px_25px_rgba(74,113,158,0.1)]
                   "
                 >
@@ -420,14 +427,14 @@ export default function ProfileContent() {
 
                     <div
                       className="
-                        flex h-12 w-12
+                        flex h-10 w-10
                         items-center justify-center
                         rounded-full
                         bg-[#dbe7f5]
                         text-[#35598b]
                       "
                     >
-                      <ShieldCheck size={21} />
+                      <ShieldCheck size={20} />
                     </div>
 
 
