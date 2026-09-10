@@ -25,21 +25,16 @@ export default function RegisterRoute() {
     setError("");
     setLoading(true);
     try {
-      const response = await apiRequest<unknown>("/auth/masuk", {
+      await apiRequest<unknown>("/auth/daftar", {
         method: "POST",
         body: JSON.stringify({
-          name: form.get("name"),
+          nama_UMKM: form.get("organization"),
           email: form.get("email"),
-          organization: form.get("organization"),
           password,
-          password_confirmation: passwordConfirmation,
-          action: "register",
         }),
       });
-      const result = unwrapObject(response);
-      const token = result.token ?? result.access_token;
-      if (typeof token === "string") localStorage.setItem("cuanku_token", token);
-      router.push(token ? "/dashboard" : "/login");
+      // Pendaftaran berhasil, arahkan ke login
+      router.push("/login");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Pendaftaran gagal.");
     } finally {
