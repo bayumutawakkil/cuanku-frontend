@@ -105,7 +105,12 @@ export default function TransactionContent() {
     try {
       await apiRequest("/transaksi", {
         method: "POST",
-        body: JSON.stringify(transaction),
+        body: JSON.stringify({
+            jenis_transaksi: transaction.type,
+            kategori: transaction.category,
+            jumlah: transaction.amount,
+            keterangan: transaction.note
+        }),
       });
 
       if (editingTransaction) {

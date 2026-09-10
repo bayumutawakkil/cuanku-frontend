@@ -16,7 +16,10 @@ export default function PredictionContent() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    apiRequest<unknown>("/dashboard/predict-revenue")
+    apiRequest<unknown>("/dashboard/predict-revenue", {
+      method: "POST",
+      body: JSON.stringify({ n_hari: 7 })
+    })
       .then((response) => setPrediction(unwrapObject(response)))
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat prediksi."));
   }, []);

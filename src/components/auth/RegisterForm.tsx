@@ -33,8 +33,7 @@ export default function RegisterForm() {
             const response = await apiRequest<unknown>("/auth/daftar", {
                 method: "POST",
                 body: JSON.stringify({
-                    name,
-                    username,
+                    nama_UMKM: organization || name,
                     email,
                     password,
                 }),
