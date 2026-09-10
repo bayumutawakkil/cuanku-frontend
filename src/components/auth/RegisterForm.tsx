@@ -27,15 +27,12 @@ export default function RegisterForm() {
         setLoading(true);
 
         try {
-            const response = await apiRequest<unknown>("/auth/masuk", {
+            const response = await apiRequest<unknown>("/auth/daftar", {
                 method: "POST",
                 body: JSON.stringify({
-                    name,
+                    nama_UMKM: organization,
                     email,
-                    organization,
                     password,
-                    password_confirmation: confirmPassword,
-                    action: "register",
                 }),
             });
 

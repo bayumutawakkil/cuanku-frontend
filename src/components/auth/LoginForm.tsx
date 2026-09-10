@@ -6,7 +6,7 @@ import Link from "next/link";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
 import Button from "../ui/Button";
-import { apiRequest, unwrapObject } from "../../lib/api";
+import { apiRequest } from "../../lib/api";
 
 export default function LoginForm() {
   const router = useRouter();
