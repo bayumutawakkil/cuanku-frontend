@@ -1,6 +1,14 @@
 import { Bell, ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getSessionUser, type SessionUser } from "../../lib/session";
 
 export default function Header() {
+  const [user, setUser] = useState<SessionUser>({});
+
+  useEffect(() => {
+    setUser(getSessionUser());
+  }, []);
+
   return (
     <header
       className="
@@ -48,7 +56,7 @@ export default function Header() {
           <div className="h-9 w-9 rounded-full bg-slate-300" />
 
           <span className="hidden text-sm font-medium text-[#40536d] md:block">
-            Rendi Wahyudi
+            {user.nama_lengkap ?? user.nama_UMKM ?? user.email ?? "Pengguna"}
           </span>
 
           <ChevronDown size={16} className="text-[#40536d]" />

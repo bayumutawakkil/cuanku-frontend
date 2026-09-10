@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "./common/Button";
+import { getSessionUser, type SessionUser } from "../lib/session";
 
 export default function SettingsContent() {
   const [saved, setSaved] = useState(false);
+  const [user, setUser] = useState<SessionUser>({});
+
+  useEffect(() => {
+    setUser(getSessionUser());
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -12,9 +18,9 @@ export default function SettingsContent() {
         <h2 className="text-xl font-bold text-[#001229]">Informasi Pribadi</h2>
         <p className="mb-6 mt-1 text-sm text-slate-500">Data pribadi Anda sebagai pemilik akun</p>
         <div className="grid gap-5 md:grid-cols-2">
-          <label className="text-sm font-semibold">Nama Lengkap<input defaultValue="Rendi Wahyudi" className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
-          <label className="text-sm font-semibold">Email<input defaultValue="rendywahyudi@gmail.com" className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
-          <label className="text-sm font-semibold">Nomor Telepon<input defaultValue="+628" className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
+          <label className="text-sm font-semibold">Nama Lengkap<input defaultValue={user.nama_lengkap ?? user.nama_UMKM ?? ""} className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
+          <label className="text-sm font-semibold">Email<input defaultValue={user.email ?? ""} className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
+          <label className="text-sm font-semibold">Nomor Telepon<input defaultValue={user.nomor_telepon ?? ""} className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
         </div>
       </section>
 
@@ -22,9 +28,9 @@ export default function SettingsContent() {
         <h2 className="text-xl font-bold text-[#001229]">Informasi Bisnis</h2>
         <p className="mb-6 mt-1 text-sm text-slate-500">Data usaha yang Anda kelola</p>
         <div className="grid gap-5 md:grid-cols-2">
-          <label className="text-sm font-semibold">Nama Usaha<input defaultValue="Minimarket Jaya Sentosa" className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
-          <label className="text-sm font-semibold">Kategori Usaha<input defaultValue="Minimarket" className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
-          <label className="text-sm font-semibold md:col-span-2">Alamat<textarea defaultValue="Jl. Melati No. 12, Kec. Padang Barat, Kota Padang, Sumatera Barat 25111" className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
+          <label className="text-sm font-semibold">Nama Usaha<input defaultValue={user.nama_UMKM ?? ""} className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
+          <label className="text-sm font-semibold">Kategori Usaha<input defaultValue={user.kategori_usaha ?? ""} className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
+          <label className="text-sm font-semibold md:col-span-2">Alamat<textarea defaultValue={user.alamat ?? ""} className="mt-2 w-full rounded-xl border p-3 font-normal"/></label>
         </div>
       </section>
 

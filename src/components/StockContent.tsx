@@ -7,18 +7,10 @@ import Modal from "./common/Modal";
 import type { Product } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
 
-const initial: Product[] = [
-  { id: 1, name: "Aqua Botol 600 mL", stock: 4, unit: "karton", buyPrice: 2200, sellPrice: 4000, status: "Kritis" },
-  { id: 2, name: "Susu UHT Coklat 250 mL", stock: 8, unit: "kardus", buyPrice: 120000, sellPrice: 180000, status: "Aman" },
-  { id: 3, name: "Susu UHT Full Cream 1L", stock: 3, unit: "pcs", buyPrice: 14000, sellPrice: 21000, status: "Kritis" },
-  { id: 4, name: "Cup Plastik 16oz (Pack)", stock: 12, unit: "packs", buyPrice: 22000, sellPrice: 35000, status: "Menipis" },
-  { id: 5, name: "Sirup Vanilla 1L", stock: 8, unit: "botol", buyPrice: 65000, sellPrice: 95000, status: "Menipis" },
-];
-
 const money = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
 
 export default function StockContent() {
-  const [products, setProducts] = useState(initial);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -28,17 +20,18 @@ export default function StockContent() {
     apiRequest<unknown>("/transaksi/stok")
       .then((response) => {
         const products = unwrapList<Record<string, unknown>>(response, ["products", "produk", "stocks", "stok", "items"]);
-        if (products.length) {
-          setProducts(products.map((item, index) => ({
-            id: Number(item.id ?? index),
-            name: String(item.name ?? item.nama ?? item.product_name ?? "-"),
-            stock: Number(item.stock ?? item.quantity ?? item.stok ?? 0),
+        setProducts(products.map((item, index) => {
+            const stock = Number(item.stock ?? item.quantity ?? item.stok ?? item.sisa_stok ?? 0);
+            return {
+            id: Number(item.id ?? item.id_produk ?? index),
+            name: String(item.name ?? item.nama ?? item.product_name ?? item.nama_produk ?? "-"),
+            stock,
             unit: String(item.unit ?? item.satuan ?? "unit"),
             buyPrice: Number(item.buyPrice ?? item.buy_price ?? item.harga_beli ?? 0),
             sellPrice: Number(item.sellPrice ?? item.sell_price ?? item.harga_jual ?? 0),
-            status: (item.status ?? "Aman") as Product["status"],
-          })));
-        }
+            status: stock <= 5 ? "Kritis" : stock <= 10 ? "Menipis" : "Aman",
+          };
+        }));
       })
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat stok."))
       .finally(() => setLoading(false));
@@ -50,24 +43,35 @@ export default function StockContent() {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const stock = Number(f.get("stock"));
-    setProducts(p => [...p, {
-      id: Date.now(),
-      name: String(f.get("name")),
-      stock,
-      unit: String(f.get("unit")),
-      buyPrice: Number(f.get("buy")),
-      sellPrice: Number(f.get("sell")),
-      status: stock < 5 ? "Kritis" : stock <= 10 ? "Menipis" : "Aman",
-    }]);
-    setOpen(false);
+    const product = {
+      nama_produk: String(f.get("name")),
+      sisa_stok: stock,
+      harga_beli: Number(f.get("buy")),
+      harga_jual: Number(f.get("sell")),
+    };
+    apiRequest("/transaksi/stok", { method: "POST", body: JSON.stringify(product) })
+      .then(() => setProducts((current) => [...current, {
+        id: Date.now(),
+        name: product.nama_produk,
+        stock,
+        unit: String(f.get("unit")),
+        buyPrice: product.harga_beli,
+        sellPrice: product.harga_jual,
+        status: stock <= 5 ? "Kritis" : stock <= 10 ? "Menipis" : "Aman",
+      }]))
+      .then(() => setOpen(false))
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal menyimpan produk."));
   };
+
+  const totalStockValue = products.reduce((total, product) => total + product.stock * product.buyPrice, 0);
+  const lowStockCount = products.filter((product) => product.stock <= 10).length;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-[#E6EDF6]"><p className="text-sm text-slate-500">Total Produk Terdaftar</p><b className="mt-2 block text-2xl text-[#001229]">148 Produk</b><small className="text-emerald-600">Aktif diperbarui hari ini</small></div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-[#E6EDF6]"><p className="text-sm text-slate-500">Total Nilai Aset Stok</p><b className="mt-2 block text-2xl text-[#001229]">Rp 32.450.000</b><small className="text-slate-500">Nilai estimasi modal barang</small></div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-[#E6EDF6]"><p className="text-sm text-slate-500">Produk Stok Menipis</p><b className="mt-2 block text-2xl text-[#001229]">5 Produk</b><small className="text-red-500">Memerlukan tindakan segera</small></div>
+        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Total Produk Terdaftar</p><b className="mt-2 block text-2xl text-[#001229]">{products.length} Produk</b><small className="text-slate-500">Dari database</small></div>
+        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Total Nilai Aset Stok</p><b className="mt-2 block text-2xl text-[#001229]">{money(totalStockValue)}</b><small className="text-slate-500">Estimasi modal barang</small></div>
+        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Produk Stok Menipis</p><b className="mt-2 block text-2xl text-[#001229]">{lowStockCount} Produk</b><small className="text-slate-500">Berdasarkan stok tersimpan</small></div>
       </div>
 
       <div className="rounded-2xl border border-[#E6EDF6] bg-white shadow-sm">
@@ -85,7 +89,7 @@ export default function StockContent() {
             </tr>)}</tbody>
           </table>
         </div>
-        <div className="border-t p-5 text-sm text-slate-500">Menampilkan 1-{filtered.length} dari 148 produk</div>
+        <div className="border-t p-5 text-sm text-slate-500">Menampilkan {filtered.length} dari {products.length} produk</div>
       </div>
 
       <Modal open={open} onClose={() => setOpen(false)} title="Tambah Produk">
