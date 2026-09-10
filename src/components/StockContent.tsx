@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Pencil, Trash2, Package, WalletCards, TrendingDown } from "lucide-react";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Product } from "../types";
@@ -76,91 +76,6 @@ export default function StockContent() {
         <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Produk Stok Menipis</p><b className="mt-2 block text-2xl text-[#001229]">{lowStockCount} Produk</b><small className="text-slate-500">Berdasarkan stok tersimpan</small></div>
       </div>
 
-        {/* TOTAL PRODUK */}
-        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-500">
-                Total Produk Terdaftar
-              </p>
-
-              <b className="mt-2 block text-2xl text-[#001229]">
-                148 Produk
-              </b>
-
-              <small className="text-slate-500">
-                Aktif diperbarui hari ini
-              </small>
-            </div>
-
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF4FF]">
-              <Package
-                size={20}
-                strokeWidth={2}
-                className="text-[#2563EB]"
-              />
-            </div>
-          </div>
-        </div>
-
-
-        {/* TOTAL NILAI ASET */}
-        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-500">
-                Total Nilai Aset Stok
-              </p>
-
-              <b className="mt-2 block text-2xl text-[#001229]">
-                Rp 32.450.000
-              </b>
-
-              <small className="text-emerald-500">
-                Nilai estimasi modal barang
-              </small>
-            </div>
-
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D9FBEA]">
-              <WalletCards
-                size={20}
-                strokeWidth={2}
-                className="text-emerald-500"
-              />
-            </div>
-          </div>
-        </div>
-
-
-        {/* PRODUK STOK MENIPIS */}
-        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-slate-500">
-                Produk Stok Menipis
-              </p>
-
-              <b className="mt-2 block text-2xl text-red-500">
-                5 Produk
-              </b>
-
-              <small className="text-slate-500">
-                Memerlukan tindakan segera
-              </small>
-            </div>
-
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF4CC]">
-              <TrendingDown
-                size={20}
-                strokeWidth={2}
-                className="text-[#F59E0B]"
-              />
-            </div>
-          </div>
-        </div>
-
-      </div>
-      
       <div className="rounded-2xl border border-[#E6EDF6] bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:justify-between">
           <div><h2 className="text-xl font-bold text-[#001229]">Daftar Stok Produk</h2></div>

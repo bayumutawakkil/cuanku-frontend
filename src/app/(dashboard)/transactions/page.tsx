@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import TransactionContent from "../../../components/TransactionContent";
 
 export default function TransactionsRoute() {
-  return <TransactionContent />;
+  return (
+    <Suspense fallback={null}>
+      <TransactionContent />
+    </Suspense>
+  );
 }

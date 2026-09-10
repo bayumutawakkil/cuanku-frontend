@@ -2,25 +2,45 @@
 
 import type { ReactNode } from "react";
 import { Search, Bell, ChevronDown } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
-import { useEffect, useState } from "react";
-import { getSessionUser, type SessionUser } from "../../lib/session";
+import { useState, useSyncExternalStore } from "react";
+import type { SessionUser } from "../../lib/session";
 
 type DashboardLayoutProps = {
   children: ReactNode;
 };
+
+const subscribeToSession = (onStoreChange: () => void) => {
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+};
+
+const getSessionSnapshot = () => window.localStorage.getItem("cuanku_user") ?? "";
+const getServerSessionSnapshot = () => "";
+
+function parseSessionUser(snapshot: string): SessionUser {
+  if (!snapshot) return {};
+
+  try {
+    return JSON.parse(snapshot) as SessionUser;
+  } catch {
+    return {};
+  }
+}
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [headerSearch, setHeaderSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [user, setUser] = useState<SessionUser>({});
-
-  useEffect(() => {
-    setUser(getSessionUser());
-  }, []);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const sessionSnapshot = useSyncExternalStore(
+    subscribeToSession,
+    getSessionSnapshot,
+    getServerSessionSnapshot,
+  );
+  const user = parseSessionUser(sessionSnapshot);
 
   const pageTitles: Record<string, string> = {
     "/dashboard": "Dashboard",
@@ -34,7 +54,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleGlobalSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const keyword = globalSearch.trim();
+    const keyword = headerSearch.trim();
 
     if (!keyword) return;
 
@@ -61,8 +81,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             />
 
             <input
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
               placeholder="Cari Transaksi, Stok..."
               className="
                 w-48
@@ -98,9 +118,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <Bell size={17} />
 
-             {!allRead && (
-              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
-             )}
+            <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
           </button>
 
           {showNotifications && (
@@ -110,49 +128,44 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
 
           {/* Profile */}
-          <button
-            type="button"
-            className="flex items-center gap-2"
-          >
-            <div className="h-9 w-9 rounded-full bg-slate-200" />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowProfileMenu((prev) => !prev)}
+              className="flex items-center gap-2"
+            >
+              <div className="h-9 w-9 rounded-full bg-slate-200" />
 
-            <div className="text-left">
-              <p className="text-xs font-bold text-[#001229]">
-                {user.nama_lengkap ?? user.nama_UMKM ?? user.email ?? "Pengguna"}
-              </p>
-              <p className="text-[10px] text-slate-500">
-                Pemilik
-              </p>
-            </div>
+              <div className="text-left">
+                <p className="text-xs font-bold text-[#001229]">
+                  {user.nama_lengkap ?? user.nama_UMKM ?? user.email ?? "Pengguna"}
+                </p>
+                <p className="text-[10px] text-slate-500">Pemilik</p>
+              </div>
 
-                  <button
-                    type="button"
-                    className="
-                      flex w-full items-center gap-3
-                      rounded-lg px-3 py-2
-                      text-left text-xs font-semibold
-                      text-[#001229]
-                      hover:bg-[#F4F9FF]
-                    "
-                  >
-                    <Repeat2 size={15} />
-                    Multi User
-                  </button>
+              <ChevronDown size={16} className="text-slate-500" />
+            </button>
 
-                  <button
-                    type="button"
-                    className="
-                      flex w-full items-center gap-3
-                      rounded-lg px-3 py-2
-                      text-left text-xs font-semibold
-                      text-red-600
-                      hover:bg-red-50
-                    "
-                  >
-                    <span>↪</span>
-                    Log Out
-                  </button>
-                </div>
+            {showProfileMenu && (
+              <div className="absolute right-0 top-12 z-50 w-40 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => router.push("/settings")}
+                  className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#001229] hover:bg-[#F4F9FF]"
+                >
+                  Pengaturan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem("cuanku_token");
+                    localStorage.removeItem("cuanku_user");
+                    router.push("/login");
+                  }}
+                  className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50"
+                >
+                  Log Out
+                </button>
               </div>
             )}
           </div>
