@@ -22,9 +22,24 @@ export default function LoginForm() {
     setError("");
     setLoading(true);
 
-    // Langsung masuk ke dashboard tanpa delay
-    localStorage.setItem("cuanku_token", "dummy_token_123");
-    router.push("/dashboard");
+    try {
+      const response = await apiRequest<{ token: string }>("/auth/masuk", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const token = response.token;
+      if (token) {
+        localStorage.setItem("cuanku_token", token);
+        router.push("/dashboard");
+      } else {
+        throw new Error("Token tidak ditemukan di respons server.");
+      }
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Gagal masuk.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {

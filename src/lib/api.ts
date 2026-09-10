@@ -13,9 +13,17 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
   const body = await response.json().catch(() => null);
   if (!response.ok) {
-    const message = body && typeof body === "object" && "message" in body
-      ? String(body.message)
-      : `Request gagal (${response.status})`;
+    let message = `Request gagal (${response.status})`;
+    if (body && typeof body === "object") {
+      if ("message" in body) message = String(body.message);
+      else if ("error" in body) message = String(body.error);
+    }
+    // Kirim event global untuk ToastProvider
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("cuanku-error", { detail: { message } })
+      );
+    }
     throw new Error(message);
   }
 

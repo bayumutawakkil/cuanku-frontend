@@ -29,15 +29,12 @@ export default function RegisterRoute() {
     setLoading(true);
 
     try {
-      const response = await apiRequest<unknown>("/auth/masuk", {
+      const response = await apiRequest<unknown>("/auth/daftar", {
         method: "POST",
         body: JSON.stringify({
-          name: form.get("name"),
+          nama_UMKM: form.get("organization"),
           email: form.get("email"),
-          organization: form.get("organization"),
           password,
-          password_confirmation: passwordConfirmation,
-          action: "register",
         }),
       });
 
@@ -48,6 +45,7 @@ export default function RegisterRoute() {
         localStorage.setItem("cuanku_token", token);
       }
 
+      // Jika ada token langsung ke dashboard, jika tidak arahkan ke login
       router.push(token ? "/dashboard" : "/login");
     } catch (requestError) {
       setError(
