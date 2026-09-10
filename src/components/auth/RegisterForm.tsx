@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { Mail, UserRound, AtSign, Building2, KeyRound, } from "lucide-react";
 import InputField from "./InputField";
 import Button from "../ui/Button";
 import GoogleIcon from "../ui/GoogleIcon";
@@ -8,6 +10,7 @@ import { apiRequest, unwrapObject } from "../../lib/api";
 
 export default function RegisterForm() {
     const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [organization, setOrganization] = useState("");
     const [password, setPassword] = useState("");
@@ -30,7 +33,8 @@ export default function RegisterForm() {
             const response = await apiRequest<unknown>("/auth/daftar", {
                 method: "POST",
                 body: JSON.stringify({
-                    nama_UMKM: organization,
+                    name,
+                    username,
                     email,
                     password,
                 }),
@@ -87,15 +91,23 @@ export default function RegisterForm() {
 
                 <InputField
                     label="Nama Lengkap"
-                    labelIcon="👤"
+                    labelIcon={<UserRound size={14} strokeWidth={1.8} />}
                     placeholder="Rendi Wahyudi"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                 />
 
                 <InputField
+                    label="Username"
+                    labelIcon={<UserRound size={14} strokeWidth={1.8} />}
+                    placeholder="rendiwahyudi"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                />
+
+                <InputField
                     label="Alamat Email"
-                    labelIcon="📧"
+                    labelIcon={<Mail size={14} strokeWidth={1.8} />}
                     type="email"
                     placeholder="rendiwahyudi@gmail.com"
                     value={email}
@@ -104,7 +116,7 @@ export default function RegisterForm() {
 
                 <InputField
                     label="Nama UMKM/Organisasi"
-                    labelIcon="🏢"
+                    labelIcon={<Building2 size={14} strokeWidth={1.8} />}
                     placeholder="Minimarket Jaya Sentosa"
                     value={organization}
                     onChange={(event) => setOrganization(event.target.value)}
@@ -112,7 +124,7 @@ export default function RegisterForm() {
 
                 <InputField
                     label="Kata Sandi"
-                    labelIcon="🔒"
+                    labelIcon={<KeyRound size={14} strokeWidth={2} />}
                     type="password"
                     placeholder="••••••••"
                     value={password}
@@ -121,7 +133,7 @@ export default function RegisterForm() {
 
                 <InputField
                     label="Konfirmasi Kata Sandi"
-                    labelIcon="🔒"
+                    labelIcon={<KeyRound size={14} strokeWidth={2} />}
                     type="password"
                     placeholder="••••••••"
                     value={confirmPassword}
@@ -145,12 +157,12 @@ export default function RegisterForm() {
 
             <p className="mt-5 text-center text-sm text-slate-500">
                 Sudah punya akun?{" "}
-                <button 
-                    type="button"
+                <Link 
+                    href="/login"
                     className="font-medium text-blue-500 hover:underline"
                 >
                     Masuk
-                </button>
+                </Link>
             </p>
         </div>
     );

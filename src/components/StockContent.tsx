@@ -8,8 +8,8 @@ import type { Product } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
 
 const initial: Product[] = [
-  { id: 1, name: "Kopi Arabika Toraja 250g", stock: 4, unit: "packs", buyPrice: 45000, sellPrice: 75000, status: "Kritis" },
-  { id: 2, name: "Gula Aren Cair 5L", stock: 18, unit: "botol", buyPrice: 120000, sellPrice: 180000, status: "Aman" },
+  { id: 1, name: "Aqua Botol 600 mL", stock: 4, unit: "karton", buyPrice: 2200, sellPrice: 4000, status: "Kritis" },
+  { id: 2, name: "Susu UHT Coklat 250 mL", stock: 8, unit: "kardus", buyPrice: 120000, sellPrice: 180000, status: "Aman" },
   { id: 3, name: "Susu UHT Full Cream 1L", stock: 3, unit: "pcs", buyPrice: 14000, sellPrice: 21000, status: "Kritis" },
   { id: 4, name: "Cup Plastik 16oz (Pack)", stock: 12, unit: "packs", buyPrice: 22000, sellPrice: 35000, status: "Menipis" },
   { id: 5, name: "Sirup Vanilla 1L", stock: 8, unit: "botol", buyPrice: 65000, sellPrice: 95000, status: "Menipis" },
