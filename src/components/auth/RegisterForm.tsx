@@ -7,6 +7,7 @@ import InputField from "./InputField";
 import Button from "../ui/Button";
 import GoogleIcon from "../ui/GoogleIcon";
 import { apiRequest, unwrapObject } from "../../lib/api";
+import { saveSessionUser } from "../../lib/session";
 
 export default function RegisterForm() {
     const [name, setName] = useState("");
@@ -30,16 +31,14 @@ export default function RegisterForm() {
         setLoading(true);
 
         try {
-            const response = await apiRequest<unknown>("/auth/masuk", {
+            const response = await apiRequest<unknown>("/auth/daftar", {
                 method: "POST",
                 body: JSON.stringify({
-                    name,
+                    nama_UMKM: organization || name,
+                    nama_lengkap: name,
                     username,
                     email,
-                    organization,
                     password,
-                    password_confirmation: confirmPassword,
-                    action: "register",
                 }),
             });
 
@@ -49,6 +48,12 @@ export default function RegisterForm() {
             if (typeof token === "string") {
                 localStorage.setItem("cuanku_token", token);
             }
+            saveSessionUser({
+                nama_UMKM: String(result.nama_UMKM ?? (organization || name)),
+                nama_lengkap: String(result.nama_lengkap ?? name),
+                username: String(result.username ?? username),
+                email,
+            });
 
             window.location.href = token ? "/dashboard" : "/login";
         } catch (requestError) {
@@ -63,7 +68,7 @@ export default function RegisterForm() {
     };
 
     const handleGoogleRegister = () => {
-        console.log("Daftar dengan Google");
+        setError("Pendaftaran Google belum dikonfigurasi.");
     };
 
     return (
@@ -95,7 +100,7 @@ export default function RegisterForm() {
                 <InputField
                     label="Nama Lengkap"
                     labelIcon={<UserRound size={14} strokeWidth={1.8} />}
-                    placeholder="Rendi Wahyudi"
+                    placeholder="Nama lengkap"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                 />
@@ -103,7 +108,7 @@ export default function RegisterForm() {
                 <InputField
                     label="Username"
                     labelIcon={<UserRound size={14} strokeWidth={1.8} />}
-                    placeholder="rendiwahyudi"
+                    placeholder="nama pengguna"
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
                 />
@@ -112,7 +117,7 @@ export default function RegisterForm() {
                     label="Alamat Email"
                     labelIcon={<Mail size={14} strokeWidth={1.8} />}
                     type="email"
-                    placeholder="rendiwahyudi@gmail.com"
+                    placeholder="email@contoh.com"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                 />
@@ -120,7 +125,7 @@ export default function RegisterForm() {
                 <InputField
                     label="Nama UMKM/Organisasi"
                     labelIcon={<Building2 size={14} strokeWidth={1.8} />}
-                    placeholder="Minimarket Jaya Sentosa"
+                    placeholder="Nama usaha"
                     value={organization}
                     onChange={(event) => setOrganization(event.target.value)}
                 />

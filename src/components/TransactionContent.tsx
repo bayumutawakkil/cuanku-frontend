@@ -8,18 +8,10 @@ import Modal from "./common/Modal";
 import type { Transaction } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
 
-const initialData: Transaction[] = [
-  { id: 1, date: "24 Jan 2026", type: "Pemasukan", category: "Makanan", note: "Penjualan Roti Sari Gandum 200gr 3 bks", amount: 400000 },
-  { id: 2, date: "23 Jan 2026", type: "Pengeluaran", category: "Minuman", note: "Pembelian Susu UHT Full Cream 2 Karton", amount: 320000 },
-  { id: 3, date: "22 Jan 2026", type: "Pemasukan", category: "Barang", note: "Penjualan Kertas HVS 250lbr 5 pack", amount: 250000 },
-  { id: 4, date: "22 Jan 2026", type: "Pengeluaran", category: "Operasional", note: "Biaya listrik dan air toko kopi", amount: 450000 },
-  { id: 5, date: "21 Jan 2026", type: "Pemasukan", category: "Makanan", note: "Penjualan makaroni pedas 30 pcs", amount: 450000 },
-];
-
 const money = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
 
 export default function TransactionContent() {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [type, setType] = useState("Semua");
@@ -70,16 +62,14 @@ export default function TransactionContent() {
     apiRequest<unknown>("/transaksi")
       .then((response) => {
         const transactions = unwrapList<Record<string, unknown>>(response, ["transactions", "transaksi", "items"]);
-        if (transactions.length) {
-          setData(transactions.map((item, index) => ({
-            id: Number(item.id ?? index),
-            date: String(item.date ?? item.tanggal ?? ""),
-            type: (item.type ?? item.transaction_type ?? item.jenis) as Transaction["type"],
+        setData(transactions.map((item, index) => ({
+            id: Number(item.id ?? item.id_transaksi ?? index),
+            date: formatDisplayDate(String(item.date ?? item.tanggal ?? "")),
+            type: (item.type ?? item.transaction_type ?? item.jenis ?? item.jenis_transaksi) as Transaction["type"],
             category: String(item.category ?? item.kategori ?? "-"),
-            note: String(item.note ?? item.description ?? item.catatan ?? "-"),
-            amount: Number(item.amount ?? item.nominal ?? 0),
+            note: String(item.note ?? item.description ?? item.catatan ?? item.keterangan ?? "-"),
+            amount: Number(item.amount ?? item.nominal ?? item.jumlah ?? 0),
           })));
-        }
       })
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat transaksi."))
       .finally(() => setLoading(false));
@@ -176,8 +166,25 @@ export default function TransactionContent() {
       Des: "12",
     };
 
-    return `${year}-${months[month]}-${day.padStart(2, "0")}`;
+    return months[month] ? `${year}-${months[month]}-${day.padStart(2, "0")}` : date;
   };
+
+  const formatDisplayDate = (date: string) => {
+    if (!date) return "-";
+    const parsed = new Date(date);
+    return Number.isNaN(parsed.getTime())
+      ? date
+      : parsed.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+  };
+
+  const dateRange = useMemo(() => {
+    if (!data.length) return "Belum ada transaksi";
+    const dates = data.map((item) => new Date(item.date)).filter((date) => !Number.isNaN(date.getTime()));
+    if (!dates.length) return "Semua tanggal";
+    const first = new Date(Math.min(...dates.map((date) => date.getTime())));
+    const last = new Date(Math.max(...dates.map((date) => date.getTime())));
+    return `${first.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })} - ${last.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}`;
+  }, [data]);
 
   const addTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -195,7 +202,12 @@ export default function TransactionContent() {
     try {
       await apiRequest("/transaksi", {
         method: "POST",
-        body: JSON.stringify(transaction),
+        body: JSON.stringify({
+            jenis_transaksi: transaction.type,
+            kategori: transaction.category,
+            jumlah: transaction.amount,
+            keterangan: transaction.note
+        }),
       });
 
       if (editingTransaction) {
@@ -269,12 +281,8 @@ export default function TransactionContent() {
             type="button"
             className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
           >
-            <Calendar
-              size={16}
-              className="text-slate-600"
-            />
-
-            01 Jan - 24 Jan 2026
+            <Calendar size={16} className="text-slate-600" />
+            {dateRange}
           </button>
 
           {/* TAMBAH TRANSAKSI */}
@@ -501,82 +509,17 @@ export default function TransactionContent() {
           </table>
         </div>
 
-
-        {/* FOOTER TABEL */}
-        <div className="border-t border-slate-100 px-5 py-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-            {/* JUMLAH DATA */}
-            <span className="text-[10px] text-slate-500">
-              Menampilkan{" "}
-              {filtered.length === 0
-                ? 0
-                : (currentPage - 1) * itemsPerPage + 1}
-              -
-              {Math.min(
-                currentPage * itemsPerPage,
-                filtered.length
-              )}{" "}
-              dari {filtered.length} transaksi
-            </span>
-
-            {/* PAGINATION */}
-            <div className="flex items-center gap-2">
-
-              {/* PREVIOUS */}
-              <button
-                type="button"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.max(prev - 1, 1))
-                }
-                disabled={currentPage === 1}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
-                  currentPage === 1
-                    ? "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300"
-                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
-                }`}
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              {/* NOMOR HALAMAN */}
-              {Array.from({ length: totalPages }, (_, index) => index + 1)
-                .slice(0, 5)
-                .map((page) => (
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() => setCurrentPage(page)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-semibold ${
-                      currentPage === page
-                        ? "border-[#173B8F] bg-[#173B8F] text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-              {/* NEXT */}
-              <button
-                type="button"
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(prev + 1, totalPages)
-                  )
-                }
-                disabled={currentPage === totalPages}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
-                  currentPage === totalPages
-                    ? "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300"
-                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
-                }`}
-              >
-                <ChevronRight size={16} />
-              </button>
-
-            </div>
-          </div>
+      <div className="flex flex-col gap-3 border-t border-slate-100 p-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <span>Menampilkan {filtered.length} dari {data.length} transaksi</span>
+        <div className="flex items-center gap-1">
+          <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-50">
+            <ChevronLeft size={16} />
+          </button>
+          <button className="h-8 w-8 rounded-lg bg-[#173B8F] text-xs font-semibold text-white">1</button>
+          <button className="h-8 w-8 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">2</button>
+          <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-50">
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
 

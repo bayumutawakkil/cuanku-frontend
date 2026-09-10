@@ -7,7 +7,8 @@ import Link from "next/link";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
 import Button from "../ui/Button";
-import { apiRequest, unwrapObject } from "../../lib/api";
+import { apiRequest } from "../../lib/api";
+import { saveSessionUser } from "../../lib/session";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const response = await apiRequest<{ token: string }>("/auth/masuk", {
+      const response = await apiRequest<{ token: string; user?: { nama_UMKM?: string; email?: string } }>("/auth/masuk", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
@@ -31,6 +32,7 @@ export default function LoginForm() {
       const token = response.token;
       if (token) {
         localStorage.setItem("cuanku_token", token);
+        saveSessionUser(response.user ?? null);
         router.push("/dashboard");
       } else {
         throw new Error("Token tidak ditemukan di respons server.");
@@ -43,9 +45,7 @@ export default function LoginForm() {
   };
 
   const handleGoogleLogin = () => {
-    // Dummy login untuk tombol Google
-    localStorage.setItem("cuanku_token", "dummy_token_123");
-    router.push("/dashboard");
+    setError("Login Google belum dikonfigurasi.");
   };
 
   return (
@@ -62,7 +62,7 @@ export default function LoginForm() {
         <InputField
           label="Username/Email"
           labelIcon={<UserRound size={14} strokeWidth={1.8} />}
-          placeholder="rendiwahyudi@gmail.com"
+          placeholder="email@contoh.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />

@@ -2,61 +2,7 @@
 
 import RegisterIllustration from "../../components/auth/RegisterIllustration";
 import RegisterForm from "../../components/auth/RegisterForm";
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { apiRequest, unwrapObject } from "../../lib/api";
-
 export default function RegisterRoute() {
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const form = new FormData(event.currentTarget);
-    const password = String(form.get("password"));
-    const passwordConfirmation = String(
-      form.get("password_confirmation")
-    );
-
-    if (password !== passwordConfirmation) {
-      setError("Konfirmasi kata sandi tidak sama.");
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-
-    try {
-      const response = await apiRequest<unknown>("/auth/daftar", {
-        method: "POST",
-        body: JSON.stringify({
-          nama_UMKM: form.get("organization"),
-          email: form.get("email"),
-          password,
-        }),
-      });
-
-      const result = unwrapObject(response);
-      const token = result.token ?? result.access_token;
-
-      if (typeof token === "string") {
-        localStorage.setItem("cuanku_token", token);
-      }
-
-      // Jika ada token langsung ke dashboard, jika tidak arahkan ke login
-      router.push(token ? "/dashboard" : "/login");
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Pendaftaran gagal."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <main className="min-h-screen">

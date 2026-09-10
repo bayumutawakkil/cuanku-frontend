@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getSessionUser, type SessionUser } from "../../lib/session";
 
 const menuItems = [
   {
@@ -40,6 +42,11 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<SessionUser>({});
+
+  useEffect(() => {
+    setUser(getSessionUser());
+  }, []);
 
   return (
     <aside
@@ -119,11 +126,11 @@ export default function Sidebar() {
 
             <div>
               <h3 className="text-sm font-semibold text-[#33445a]">
-                Minimarket Jaya Sentosa
+                {user.nama_UMKM ?? "Usaha belum diatur"}
               </h3>
 
               <p className="text-xs text-slate-500">
-                Owner: Rendi Wahyudi
+                {user.nama_lengkap ?? user.email ?? "Pemilik"}
               </p>
             </div>
           </div>

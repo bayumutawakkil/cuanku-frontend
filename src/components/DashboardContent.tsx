@@ -27,6 +27,7 @@ export default function DashboardContent() {
   const [transaksiList, setTransaksiList] = useState<Transaksi[]>([]);
   const [stokList, setStokList] = useState<StokProduk[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,8 +38,8 @@ export default function DashboardContent() {
         ]);
         setTransaksiList(transaksiRes.data || []);
         setStokList(stokRes.data || []);
-      } catch (error) {
-        console.error("Gagal mengambil data dashboard:", error);
+      } catch (requestError) {
+        setError(requestError instanceof Error ? requestError.message : "Gagal mengambil data dashboard.");
       } finally {
         setLoading(false);
       }
@@ -48,11 +49,11 @@ export default function DashboardContent() {
 
   // Calculate stats
   const totalPendapatan = transaksiList
-    .filter((t) => t.jenis_transaksi === "pemasukan")
+    .filter((t) => t.jenis_transaksi.toLowerCase() === "pemasukan")
     .reduce((acc, t) => acc + Number(t.jumlah), 0);
 
   const totalPengeluaran = transaksiList
-    .filter((t) => t.jenis_transaksi === "pengeluaran")
+    .filter((t) => t.jenis_transaksi.toLowerCase() === "pengeluaran")
     .reduce((acc, t) => acc + Number(t.jumlah), 0);
 
   const labaBersih = totalPendapatan - totalPengeluaran;
@@ -93,12 +94,27 @@ export default function DashboardContent() {
     };
   };
 
+  const chartData = Array.from(
+    transaksiList.reduce((months, transaction) => {
+      const date = new Date(transaction.tanggal);
+      if (Number.isNaN(date.getTime())) return months;
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      const current = months.get(key) ?? { label: date.toLocaleDateString("id-ID", { month: "short" }), income: 0, expense: 0 };
+      if (transaction.jenis_transaksi.toLowerCase() === "pemasukan") current.income += Number(transaction.jumlah);
+      if (transaction.jenis_transaksi.toLowerCase() === "pengeluaran") current.expense += Number(transaction.jumlah);
+      months.set(key, current);
+      return months;
+    }, new Map<string, { label: string; income: number; expense: number }>()).entries()
+  ).slice(-6);
+  const chartMax = Math.max(...chartData.flatMap(([, value]) => [value.income, value.expense]), 1);
+
   if (loading) {
     return <div className="p-8 text-center text-slate-500">Memuat data dashboard...</div>;
   }
 
   return (
     <div className="space-y-6">
+      {error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-600">{error}</p>}
 
       {/* STAT CARD */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -117,32 +133,25 @@ export default function DashboardContent() {
 
           <div>
             <h2 className="font-bold text-[#001229]">Tren Pemasukan vs Pengeluaran</h2>
-            <p className="text-sm text-slate-500">Statistik keuangan (Data dummy sementara untuk grafik)</p>
+            <p className="text-sm text-slate-500">Statistik keuangan berdasarkan transaksi tersimpan</p>
           </div>
         </div>
 
-        <div className="flex h-64 items-end gap-3 border-b border-l border-slate-200 px-4 pb-0">
-          {[45, 62, 52, 72, 58, 82, 70, 91, 78, 96, 85, 100].map(
-            (h, i) => (
-              <div
-                key={i}
-                className="flex flex-1 items-end gap-1"
-              >
-                <div
-                  className="w-1/2 rounded-t bg-[#5C9DEF]"
-                  style={{ height: `${h}%` }}
-                />
-
-                <div
-                  className="w-1/2 rounded-t bg-[#B0C7E4]"
-                  style={{
-                    height: `${Math.max(h - 25, 20)}%`,
-                  }}
-                />
+        {chartData.length ? (
+          <div className="flex h-64 items-end gap-3 border-b border-l border-slate-200 px-4 pb-0">
+            {chartData.map(([key, value]) => (
+              <div key={key} className="flex flex-1 flex-col items-center gap-2">
+                <div className="flex h-56 w-full items-end gap-1">
+                  <div className="w-1/2 rounded-t bg-[#5C9DEF]" style={{ height: `${Math.max((value.income / chartMax) * 100, value.income ? 3 : 0)}%` }} />
+                  <div className="w-1/2 rounded-t bg-[#B0C7E4]" style={{ height: `${Math.max((value.expense / chartMax) * 100, value.expense ? 3 : 0)}%` }} />
+                </div>
+                <span className="text-xs text-slate-500">{value.label}</span>
               </div>
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="py-24 text-center text-sm text-slate-500">Belum ada transaksi untuk grafik.</p>
+        )}
 
         <div className="mt-4 flex gap-5 text-sm text-slate-500">
           <span>
@@ -266,66 +275,14 @@ export default function DashboardContent() {
           </div>
 
           <div className="space-y-4">
-
-            {stokList.length > 0 ? (
-              stokList.slice(0, 5).map((stok) => {
-
-                const status = getStokStatus(stok.sisa_stok);
-                const colors = getStokColor(status);
-
-                // Maksimal stok untuk menentukan panjang progress
-                const maxStock = 50;
-
-                const progress =
-                  Math.min(
-                    (Number(stok.sisa_stok) / maxStock) * 100,
-                    100
-                  );
-
-                return (
-                  <div
-                    key={stok.id_produk}
-                    className="space-y-2"
-                  >
-
-                    {/* Nama + jumlah + status */}
-                    <div className="flex items-center gap-3">
-
-                      <span className="flex-1 text-sm font-semibold text-[#001229]">
-                        {stok.nama_produk}
-                      </span>
-
-                      <span className="text-sm font-bold text-[#001229]">
-                        {stok.sisa_stok} pcs
-                      </span>
-
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${colors.badge}`}
-                      >
-                        {status}
-                      </span>
-
-                    </div>
-
-                    {/* Progress stok */}
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#EEF2F7]">
-                      <div
-                        className={`h-full rounded-full ${colors.bar}`}
-                        style={{
-                          width: `${progress}%`,
-                        }}
-                      />
-                    </div>
-
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-sm text-slate-500">
-                Belum ada data stok barang.
-              </p>
-            )}
-
+            {/* Tampilkan margin produk tertinggi sebagai Produk Terlaris sementara ini */}
+            {stokList.length > 0 ? [...stokList].sort((a, b) => Number(b.margin_persen) - Number(a.margin_persen)).slice(0, 5).map((stok, i) => (
+              <div key={stok.id_produk} className="flex items-center gap-4">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E6EDF6] text-sm font-bold text-[#0049A8]">{i + 1}</span>
+                <span className="flex-1 text-sm font-medium text-slate-700">{stok.nama_produk}</span>
+                <span className="text-sm font-bold text-[#001229]">{stok.margin_persen}% margin</span>
+              </div>
+            )) : <p className="text-sm text-slate-500">Belum ada data produk terlaris.</p>}
           </div>
         </section>
 

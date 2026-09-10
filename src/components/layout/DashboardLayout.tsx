@@ -1,10 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Search, Bell, ChevronDown, AlertTriangle, CircleCheck, Repeat2 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { Search, Bell, ChevronDown } from "lucide-react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getSessionUser, type SessionUser } from "../../lib/session";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -15,10 +16,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const [headerSearch, setHeaderSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [allRead, setAllRead] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [globalSearch, setGlobalSearch] = useState("");
+  const [user, setUser] = useState<SessionUser>({});
+
+  useEffect(() => {
+    setUser(getSessionUser());
+  }, []);
 
   const pageTitles: Record<string, string> = {
     "/dashboard": "Dashboard",
@@ -102,252 +104,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
 
           {showNotifications && (
-            <div
-              className="
-                absolute right-24 top-[60px]
-                z-50 w-[320px]
-                overflow-hidden
-                rounded-2xl
-                border border-slate-200
-                bg-white
-                shadow-[0_8px_25px_rgba(0,0,0,0.15)]
-              "
-            >
-              {/* Header Popup */}
-              <div
-                className="
-                  flex items-center
-                  justify-between
-                  border-b border-slate-200
-                  px-4 py-3
-                "
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-[#001229]">
-                    Notifikasi
-                  </span>
-
-                  <span
-                    className="
-                      rounded-full
-                      bg-slate-100
-                      px-2 py-0.5
-                      text-[9px]
-                      font-semibold
-                      text-slate-600
-                    "
-                  >
-                    {allRead ? "0 Belum dibaca" : "3 Belum dibaca"}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAllRead(true);
-                  }}
-                  className="
-                    relative z-50
-                    cursor-pointer
-                    text-[9px]
-                    font-semibold
-                    text-[#0049A8]
-                    hover:underline
-                  "
-                >
-                  Tandai semua dibaca
-                </button>
-              </div>
-
-              {/* NOTIFIKASI 1 */}
-              <div
-                className={`
-                  mx-3 mt-3 rounded-lg border p-3
-                  ${
-                    allRead
-                      ? "border-slate-200 bg-white"
-                      : "border-transparent bg-red-100"
-                  }
-                `}
-              >
-                <div className="flex gap-3">
-                  <div
-                    className="
-                      flex h-5 w-5 shrink-0
-                      items-center justify-center
-                      rounded
-                      bg-red-500
-                      text-white
-                    "
-                  >
-                    <AlertTriangle size={13} />
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-bold text-[#001229]">
-                      Stok Sangat Kritis!
-                    </p>
-
-                    <p className="text-[10px] text-slate-600">
-                      Aqua Botol 600 ml tersisa &lt; 5 karton.
-                    </p>
-
-                    <p className="mt-1 text-[9px] text-slate-500">
-                      10 menit yang lalu.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* NOTIFIKASI 2 */}
-              <div
-                className={`
-                  mx-3 mt-2 rounded-lg border p-3
-                  ${
-                    allRead
-                      ? "border-slate-200 bg-white"
-                      : "border-transparent bg-yellow-100"
-                  }
-                `}
-              >
-                <div className="flex gap-3">
-                  <div
-                    className="
-                      flex h-5 w-5 shrink-0
-                      items-center justify-center
-                      rounded
-                      bg-yellow-500
-                      text-white
-                    "
-                  >
-                    <AlertTriangle size={13} />
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-bold text-[#001229]">
-                      5 Produk Stok Menipis
-                    </p>
-
-                    <p className="text-[10px] text-slate-600">
-                      Tindakan diperlukan segera untuk 5 produk.
-                    </p>
-
-                    <p className="mt-1 text-[9px] text-slate-500">
-                      30 menit yang lalu.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* NOTIFIKASI 3 */}
-              <div
-                className={`
-                  mx-3 my-2 rounded-lg border p-3
-                  ${
-                    allRead
-                      ? "border-slate-200 bg-white"
-                      : "border-transparent bg-emerald-100"
-                  }
-                `}
-              >
-                <div className="flex gap-3">
-                  <div
-                    className="
-                      flex h-5 w-5 shrink-0
-                      items-center justify-center
-                      rounded
-                      bg-emerald-500
-                      text-white
-                    "
-                  >
-                    <CircleCheck size={13} />
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-bold text-[#001229]">
-                      Laporan Aset Sinkron
-                    </p>
-
-                    <p className="text-[10px] text-slate-600">
-                      Total nilai aset telah berhasil disinkron.
-                    </p>
-
-                    <p className="mt-1 text-[9px] text-slate-500">
-                      Hari ini, 07:00.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="absolute right-24 top-[60px] z-50 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 shadow-[0_8px_25px_rgba(0,0,0,0.15)]">
+            Belum ada notifikasi.
+          </div>
+        )}
 
           {/* Profile */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowProfile((prev) => !prev)}
-              className="flex items-center gap-2"
-            >
-              <div className="h-9 w-9 rounded-full bg-slate-200" />
+          <button
+            type="button"
+            className="flex items-center gap-2"
+          >
+            <div className="h-9 w-9 rounded-full bg-slate-200" />
 
-              <div className="text-left">
-                <p className="text-xs font-bold text-[#001229]">
-                  Rendi Wahyudi
-                </p>
-
-                <p className="text-[10px] text-slate-500">
-                  Owner
-                </p>
-              </div>
-
-              <ChevronDown
-                size={14}
-                className={`text-[#001229] transition ${
-                  showProfile ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {showProfile && (
-              <div
-                className="
-                  absolute right-0 top-12
-                  z-50 w-[220px]
-                  overflow-hidden
-                  rounded-2xl
-                  border border-slate-200
-                  bg-white
-                  shadow-[0_8px_25px_rgba(0,0,0,0.15)]
-                "
-              >
-                {/* Profile Header */}
-                <div className="border-b border-slate-200 px-4 py-4 text-center">
-                  <div className="mx-auto mb-2 h-14 w-14 rounded-full bg-slate-200" />
-
-                  <p className="text-xs font-bold text-[#001229]">
-                    Rendi Wahyudi
-                  </p>
-
-                  <p className="mt-1 text-[9px] text-slate-500">
-                    Owner - Minimarket Sentosa Jaya
-                  </p>
-                </div>
-
-                {/* Menu */}
-                <div className="p-2">
-                  <button
-                    type="button"
-                    className="
-                      flex w-full items-center gap-3
-                      rounded-lg px-3 py-2
-                      text-left text-xs font-semibold
-                      text-[#001229]
-                      hover:bg-[#F4F9FF]
-                    "
-                  >
-                    <span>👤</span>
-                    Profil Saya
-                  </button>
+            <div className="text-left">
+              <p className="text-xs font-bold text-[#001229]">
+                {user.nama_lengkap ?? user.nama_UMKM ?? user.email ?? "Pengguna"}
+              </p>
+              <p className="text-[10px] text-slate-500">
+                Pemilik
+              </p>
+            </div>
 
                   <button
                     type="button"
