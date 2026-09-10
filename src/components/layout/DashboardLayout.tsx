@@ -13,7 +13,8 @@ type DashboardLayoutProps = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
-
+  const router = useRouter();
+  const [headerSearch, setHeaderSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [user, setUser] = useState<SessionUser>({});
 
@@ -30,11 +31,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const pageTitle = pageTitles[pathname] ?? "Dashboard";
+  const handleGlobalSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const keyword = globalSearch.trim();
+
+    if (!keyword) return;
+
+    router.push(`/transactions?search=${encodeURIComponent(keyword)}`);
+  };
   return (
     <div className="min-h-screen bg-[#F4F9FF] text-[#001229]">
       <Sidebar />
       <div className="lg:ml-[230px]">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#E6EDF6] bg-white px-5 lg:px-6">
+        <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-[#E6EDF6] bg-white px-5 lg:px-6">
           {/* Judul halaman */}
           <h1 className="text-2xl font-bold text-[#001229]">
             {pageTitle}
@@ -44,13 +54,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-4">
 
           {/* Search */}
-          <div className="relative">
+          <form onSubmit={handleGlobalSearch} className="relative">
             <Search
               size={14}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
             <input
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
               placeholder="Cari Transaksi, Stok..."
               className="
                 w-48
@@ -65,7 +77,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 placeholder:text-slate-400
               "
             />
-          </div>
+          </form>
 
           {/* Notifikasi */}
           <button
@@ -86,7 +98,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <Bell size={17} />
 
-            <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
+             {!allRead && (
+              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
+             )}
           </button>
 
           {showNotifications && (
@@ -111,8 +125,37 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </p>
             </div>
 
-            <ChevronDown size={14} className="text-[#001229]" />
-          </button>
+                  <button
+                    type="button"
+                    className="
+                      flex w-full items-center gap-3
+                      rounded-lg px-3 py-2
+                      text-left text-xs font-semibold
+                      text-[#001229]
+                      hover:bg-[#F4F9FF]
+                    "
+                  >
+                    <Repeat2 size={15} />
+                    Multi User
+                  </button>
+
+                  <button
+                    type="button"
+                    className="
+                      flex w-full items-center gap-3
+                      rounded-lg px-3 py-2
+                      text-left text-xs font-semibold
+                      text-red-600
+                      hover:bg-red-50
+                    "
+                  >
+                    <span>↪</span>
+                    Log Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           </div>
         </header>
