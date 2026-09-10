@@ -9,11 +9,11 @@ import type { Transaction } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
 
 const initialData: Transaction[] = [
-  { id: 1, date: "24 Jan 2026", type: "Pemasukan", category: "Kopi", note: "Penjualan Kopi Susu Gula Aren 20 botol", amount: 400000 },
-  { id: 2, date: "23 Jan 2026", type: "Pengeluaran", category: "Bahan Baku", note: "Pembelian Susu UHT Full Cream 2 Karton", amount: 320000 },
-  { id: 3, date: "22 Jan 2026", type: "Pemasukan", category: "Biji Kopi", note: "Penjualan Kopi Arabika Toraja 250g 5 pack", amount: 375000 },
+  { id: 1, date: "24 Jan 2026", type: "Pemasukan", category: "Makanan", note: "Penjualan Roti Sari Gandum 200gr 3 bks", amount: 400000 },
+  { id: 2, date: "23 Jan 2026", type: "Pengeluaran", category: "Minuman", note: "Pembelian Susu UHT Full Cream 2 Karton", amount: 320000 },
+  { id: 3, date: "22 Jan 2026", type: "Pemasukan", category: "Barang", note: "Penjualan Kertas HVS 250lbr 5 pack", amount: 250000 },
   { id: 4, date: "22 Jan 2026", type: "Pengeluaran", category: "Operasional", note: "Biaya listrik dan air toko kopi", amount: 450000 },
-  { id: 5, date: "21 Jan 2026", type: "Pemasukan", category: "Camilan", note: "Penjualan makaroni pedas 30 pcs", amount: 450000 },
+  { id: 5, date: "21 Jan 2026", type: "Pemasukan", category: "Makanan", note: "Penjualan makaroni pedas 30 pcs", amount: 450000 },
 ];
 
 const money = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
@@ -321,11 +321,10 @@ export default function TransactionContent() {
               className="w-full rounded-lg bg-[#F1F5F9] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[#2F6FED]"
             >
               <option value="">Pilih kategori</option>
-              <option value="Kopi">Kopi</option>
-              <option value="Bahan Baku">Bahan Baku</option>
-              <option value="Biji Kopi">Biji Kopi</option>
+              <option value="Makanan">Makanan</option>
+              <option value="Minuman">Minuman</option>
+              <option value="Barang">Barang</option>
               <option value="Operasional">Operasional</option>
-              <option value="Camilan">Camilan</option>
             </select>
           </div>
 

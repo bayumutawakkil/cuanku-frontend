@@ -61,28 +61,12 @@ export default function Sidebar() {
     >
       {/* Logo */}
 
-      <div className="flex items-center gap-2">
-        <div
-          className="
-            flex
-            h-8
-            w-8
-            items-center
-            justify-center
-            rounded-full
-            bg-[#ffd36d]
-            text-[10px]
-            font-bold
-            text-[#9c6d17]
-            shadow-sm
-          "
-        >
-          RP
-        </div>
-
-        <h1 className="text-2xl font-bold text-[#26374e]">
-          Cuan<span className="text-[#c8952f]">Ku</span>
-        </h1>
+      <div className="mb-4">
+          <img
+            src="/images/logo.svg"
+            alt=""
+            className="h-10 w-auto"
+          />
       </div>
 
       {/* Menu */}

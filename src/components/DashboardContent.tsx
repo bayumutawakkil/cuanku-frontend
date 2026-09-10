@@ -75,6 +75,8 @@ export default function DashboardContent() {
 
   return (
     <div className="space-y-6">
+
+      {/* STAT CARD */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Total Pendapatan" value={formatRupiah(totalPendapatan)} change="" icon="💰" />
         <StatCard title="Total Pengeluaran" value={formatRupiah(totalPengeluaran)} change="" icon="💸" positive />
@@ -82,37 +84,73 @@ export default function DashboardContent() {
         <StatCard title="Total Transaksi" value={`${totalTransaksi} Transaksi`} change="" icon="🧾" />
       </div>
 
+      {/* TREN PEMASUKAN */}
       <section className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <div className="rounded-xl bg-[#E6EDF6] p-3 text-[#0049A8]">
             <BarChart3 size={22} />
           </div>
+
           <div>
             <h2 className="font-bold text-[#001229]">Tren Pemasukan vs Pengeluaran</h2>
             <p className="text-sm text-slate-500">Statistik keuangan (Data dummy sementara untuk grafik)</p>
           </div>
         </div>
+
         <div className="flex h-64 items-end gap-3 border-b border-l border-slate-200 px-4 pb-0">
-          {[45, 62, 52, 72, 58, 82, 70, 91, 78, 96, 85, 100].map((h, i) => (
-            <div key={i} className="flex flex-1 items-end gap-1">
-              <div className="w-1/2 rounded-t bg-[#5C9DEF]" style={{ height: `${h}%` }} />
-              <div className="w-1/2 rounded-t bg-[#B0C7E4]" style={{ height: `${Math.max(h - 25, 20)}%` }} />
-            </div>
-          ))}
+          {[45, 62, 52, 72, 58, 82, 70, 91, 78, 96, 85, 100].map(
+            (h, i) => (
+              <div
+                key={i}
+                className="flex flex-1 items-end gap-1"
+              >
+                <div
+                  className="w-1/2 rounded-t bg-[#5C9DEF]"
+                  style={{ height: `${h}%` }}
+                />
+
+                <div
+                  className="w-1/2 rounded-t bg-[#B0C7E4]"
+                  style={{
+                    height: `${Math.max(h - 25, 20)}%`,
+                  }}
+                />
+              </div>
+            )
+          )}
         </div>
+
         <div className="mt-4 flex gap-5 text-sm text-slate-500">
-          <span><i className="mr-2 inline-block h-3 w-3 rounded-full bg-[#5C9DEF]" />Pemasukan</span>
-          <span><i className="mr-2 inline-block h-3 w-3 rounded-full bg-[#B0C7E4]" />Pengeluaran</span>
+          <span>
+            <i className="mr-2 inline-block h-3 w-3 rounded-full bg-[#5C9DEF]" />
+            Pemasukan
+          </span>
+
+          <span>
+            <i className="mr-2 inline-block h-3 w-3 rounded-full bg-[#B0C7E4]" />
+            Pengeluaran
+          </span>
+
           <span>● Bulan Ini</span>
         </div>
       </section>
 
+      {/* STOK + PRODUK TERLARIS */}
       <div className="grid gap-6 lg:grid-cols-2">
+
+        {/* SISA STOK */}
         <section className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-3">
-            <Package className="text-[#0049A8]" />
-            <h2 className="font-bold text-[#001229]">Sisa Stok Produk</h2>
+            <Package
+              className="text-[#0049A8]"
+              size={24}
+            />
+
+            <h2 className="font-bold text-[#001229]">
+              Sisa Stok Produk
+            </h2>
           </div>
+
           <div className="space-y-4">
             {stokList.length > 0 ? stokList.map((stok) => (
               <div key={stok.id_produk} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0">
@@ -125,11 +163,19 @@ export default function DashboardContent() {
           </div>
         </section>
 
+        {/* PRODUK TERLARIS */}
         <section className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-3">
-            <BarChart3 className="text-[#0049A8]" />
-            <h2 className="font-bold text-[#001229]">Produk Terlaris</h2>
+            <BarChart3
+              className="text-[#0049A8]"
+              size={24}
+            />
+
+            <h2 className="font-bold text-[#001229]">
+              Produk Terlaris
+            </h2>
           </div>
+
           <div className="space-y-4">
             {/* Tampilkan margin produk tertinggi sebagai Produk Terlaris sementara ini */}
             {stokList.length > 0 ? stokList.sort((a, b) => Number(b.margin_persen) - Number(a.margin_persen)).slice(0, 5).map((stok, i) => (

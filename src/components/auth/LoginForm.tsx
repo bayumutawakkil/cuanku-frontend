@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { UserRound, KeyRound, } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import InputField from "./InputField";
@@ -59,19 +60,20 @@ export default function LoginForm() {
 
       <form onSubmit={handleSubmit}>
         <InputField
-          label="♟ Username/Email"
+          label="Username/Email"
+          labelIcon={<UserRound size={14} strokeWidth={1.8} />}
           placeholder="rendiwahyudi@gmail.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
 
         <InputField
-          label="♧ Kata Sandi"
+          label="Kata Sandi"
+          labelIcon={<KeyRound size={14} strokeWidth={2} />}
           type="password"
           placeholder="••••••••"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          icon="⌁"
         />
 
         <div className="mb-14 flex items-center justify-between">

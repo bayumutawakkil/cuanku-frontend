@@ -1,5 +1,5 @@
-import SettingsContent from "../../../components/SettingsContent";
+import ProfileContent from "../../../components/ProfileContent";
 
-export default function SettingsRoute() {
-  return <SettingsContent />;
+export default function SettingsPage() {
+  return <ProfileContent />;
 }
