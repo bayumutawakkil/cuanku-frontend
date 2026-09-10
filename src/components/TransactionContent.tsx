@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Plus, PencilLine, Trash2, Calendar, ChevronLeft, ChevronRight, UploadCloud, Bell, } from "lucide-react";
-import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Transaction } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
@@ -25,6 +24,14 @@ export default function TransactionContent() {
   const globalSearch = searchParams.get("search") || "";
   const [showNotification, setShowNotification] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+
+  const formatDisplayDate = (date: string) => {
+    if (!date) return "-";
+    const parsed = new Date(date);
+    return Number.isNaN(parsed.getTime())
+      ? date
+      : parsed.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+  };
 
   const showTransactionNotification = (count: number) => {
     setNotificationCount(count);
@@ -167,14 +174,6 @@ export default function TransactionContent() {
     };
 
     return months[month] ? `${year}-${months[month]}-${day.padStart(2, "0")}` : date;
-  };
-
-  const formatDisplayDate = (date: string) => {
-    if (!date) return "-";
-    const parsed = new Date(date);
-    return Number.isNaN(parsed.getTime())
-      ? date
-      : parsed.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
   };
 
   const dateRange = useMemo(() => {
@@ -521,6 +520,8 @@ export default function TransactionContent() {
             <ChevronRight size={16} />
           </button>
         </div>
+      </div>
+
       </div>
 
 

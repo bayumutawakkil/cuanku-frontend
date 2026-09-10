@@ -66,12 +66,13 @@ export default function DashboardContent() {
       maximumFractionDigits: 0,
     }).format(num);
 
-  const stokKritisList = stokList.filter((s) => getStokStatus(s.sisa_stok) === "Kritis");
   const getStokStatus = (stok: number) => {
     if (stok <= 5) return "Kritis";
     if (stok <= 10) return "Menipis";
     return "Aman";
   };
+
+  const stokKritisList = stokList.filter((s) => getStokStatus(s.sisa_stok) === "Kritis");
 
   const getStokColor = (status: string) => {
     if (status === "Kritis") {
