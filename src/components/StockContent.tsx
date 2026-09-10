@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Package, WalletCards, TrendingDown } from "lucide-react";
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Product } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
+import { useSearchParams } from "next/navigation";
 
 const initial: Product[] = [
   { id: 1, name: "Aqua Botol 600 mL", stock: 4, unit: "karton", buyPrice: 2200, sellPrice: 4000, status: "Kritis" },
@@ -21,7 +22,8 @@ export default function StockContent() {
   const [products, setProducts] = useState(initial);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") || "");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -65,14 +67,95 @@ export default function StockContent() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-[#E6EDF6]"><p className="text-sm text-slate-500">Total Produk Terdaftar</p><b className="mt-2 block text-2xl text-[#001229]">148 Produk</b><small className="text-emerald-600">Aktif diperbarui hari ini</small></div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-[#E6EDF6]"><p className="text-sm text-slate-500">Total Nilai Aset Stok</p><b className="mt-2 block text-2xl text-[#001229]">Rp 32.450.000</b><small className="text-slate-500">Nilai estimasi modal barang</small></div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-[#E6EDF6]"><p className="text-sm text-slate-500">Produk Stok Menipis</p><b className="mt-2 block text-2xl text-[#001229]">5 Produk</b><small className="text-red-500">Memerlukan tindakan segera</small></div>
-      </div>
 
+        {/* TOTAL PRODUK */}
+        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-slate-500">
+                Total Produk Terdaftar
+              </p>
+
+              <b className="mt-2 block text-2xl text-[#001229]">
+                148 Produk
+              </b>
+
+              <small className="text-slate-500">
+                Aktif diperbarui hari ini
+              </small>
+            </div>
+
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF4FF]">
+              <Package
+                size={20}
+                strokeWidth={2}
+                className="text-[#2563EB]"
+              />
+            </div>
+          </div>
+        </div>
+
+
+        {/* TOTAL NILAI ASET */}
+        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-slate-500">
+                Total Nilai Aset Stok
+              </p>
+
+              <b className="mt-2 block text-2xl text-[#001229]">
+                Rp 32.450.000
+              </b>
+
+              <small className="text-emerald-500">
+                Nilai estimasi modal barang
+              </small>
+            </div>
+
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D9FBEA]">
+              <WalletCards
+                size={20}
+                strokeWidth={2}
+                className="text-emerald-500"
+              />
+            </div>
+          </div>
+        </div>
+
+
+        {/* PRODUK STOK MENIPIS */}
+        <div className="rounded-2xl border border-[#E6EDF6] bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-slate-500">
+                Produk Stok Menipis
+              </p>
+
+              <b className="mt-2 block text-2xl text-red-500">
+                5 Produk
+              </b>
+
+              <small className="text-slate-500">
+                Memerlukan tindakan segera
+              </small>
+            </div>
+
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF4CC]">
+              <TrendingDown
+                size={20}
+                strokeWidth={2}
+                className="text-[#F59E0B]"
+              />
+            </div>
+          </div>
+        </div>
+
+      </div>
+      
       <div className="rounded-2xl border border-[#E6EDF6] bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:justify-between">
-          <div><h2 className="text-xl font-bold text-[#001229]">Daftar Stok Produk</h2><p className="text-sm text-slate-500">Pantau persediaan dan margin produk.</p></div>
+          <div><h2 className="text-xl font-bold text-[#001229]">Daftar Stok Produk</h2></div>
           <div className="flex gap-3"><div className="relative"><Search className="absolute left-3 top-3 text-slate-400" size={18}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari produk..." className="rounded-xl border border-slate-200 py-2.5 pl-10 pr-4"/></div><Button onClick={() => setOpen(true)}><Plus size={17} className="mr-2 inline"/>Tambah Produk</Button></div>
         </div>
         <div className="overflow-x-auto">

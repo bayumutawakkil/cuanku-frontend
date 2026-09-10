@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, Package, AlertTriangle } from "lucide-react";
+import { BarChart3, Package, AlertTriangle, Repeat2 } from "lucide-react";
 import StatCard from "./common/StatCard";
 import { apiRequest } from "../lib/api";
 
@@ -65,9 +65,33 @@ export default function DashboardContent() {
       maximumFractionDigits: 0,
     }).format(num);
 
-  const getStokStatus = (stok: number) => (stok <= 10 ? "Kritis" : "Aman");
-
   const stokKritisList = stokList.filter((s) => getStokStatus(s.sisa_stok) === "Kritis");
+  const getStokStatus = (stok: number) => {
+    if (stok <= 5) return "Kritis";
+    if (stok <= 10) return "Menipis";
+    return "Aman";
+  };
+
+  const getStokColor = (status: string) => {
+    if (status === "Kritis") {
+      return {
+        bar: "bg-red-500",
+        badge: "bg-red-50 text-red-500",
+      };
+    }
+
+    if (status === "Menipis") {
+      return {
+        bar: "bg-yellow-400",
+        badge: "bg-yellow-50 text-yellow-600",
+      };
+    }
+
+    return {
+      bar: "bg-emerald-500",
+      badge: "bg-emerald-50 text-emerald-600",
+    };
+  };
 
   if (loading) {
     return <div className="p-8 text-center text-slate-500">Memuat data dashboard...</div>;
@@ -135,35 +159,10 @@ export default function DashboardContent() {
         </div>
       </section>
 
-      {/* STOK + PRODUK TERLARIS */}
+      {/* PRODUK TERLARIS + SISA STOK */}
       <div className="grid gap-6 lg:grid-cols-2">
 
-        {/* SISA STOK */}
-        <section className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-3">
-            <Package
-              className="text-[#0049A8]"
-              size={24}
-            />
-
-            <h2 className="font-bold text-[#001229]">
-              Sisa Stok Produk
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {stokList.length > 0 ? stokList.map((stok) => (
-              <div key={stok.id_produk} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0">
-                <span className="text-sm font-medium text-slate-700">{stok.nama_produk}</span>
-                <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStokStatus(stok.sisa_stok) === "Kritis" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}>
-                  {stok.sisa_stok} pcs · {getStokStatus(stok.sisa_stok)}
-                </span>
-              </div>
-            )) : <p className="text-sm text-slate-500">Belum ada data stok barang.</p>}
-          </div>
-        </section>
-
-        {/* PRODUK TERLARIS */}
+        {/* PRODUK TERLARIS - KIRI */}
         <section className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-3">
             <BarChart3
@@ -177,16 +176,159 @@ export default function DashboardContent() {
           </div>
 
           <div className="space-y-4">
-            {/* Tampilkan margin produk tertinggi sebagai Produk Terlaris sementara ini */}
-            {stokList.length > 0 ? stokList.sort((a, b) => Number(b.margin_persen) - Number(a.margin_persen)).slice(0, 5).map((stok, i) => (
-              <div key={stok.id_produk} className="flex items-center gap-4">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E6EDF6] text-sm font-bold text-[#0049A8]">{i + 1}</span>
-                <span className="flex-1 text-sm font-medium text-slate-700">{stok.nama_produk}</span>
-                <span className="text-sm font-bold text-[#001229]">{stok.margin_persen}% margin</span>
-              </div>
-            )) : <p className="text-sm text-slate-500">Belum ada data produk terlaris.</p>}
+            {stokList.length > 0 ? (
+              [...stokList]
+                .sort(
+                  (a, b) =>
+                    Number(b.margin_persen) - Number(a.margin_persen)
+                )
+                .slice(0, 5)
+                .map((stok, i) => {
+
+                  const progressColors = [
+                    "bg-[#3B8EF3]",
+                    "bg-[#10B981]",
+                    "bg-[#8B5CF6]",
+                    "bg-[#F2B233]",
+                    "bg-[#EC4899]",
+                  ];
+
+                  const progressWidths = [
+                    "85%",
+                    "70%",
+                    "62%",
+                    "45%",
+                    "35%",
+                  ];
+
+                  return (
+                    <div
+                      key={stok.id_produk}
+                      className="space-y-2"
+                    >
+                      {/* Nama + ranking + jumlah */}
+                      <div className="flex items-center gap-3">
+
+                        <span className="text-sm font-bold text-slate-500">
+                          {i + 1}.
+                        </span>
+
+                        <span className="flex-1 text-sm font-semibold text-[#001229]">
+                          {stok.nama_produk}
+                        </span>
+
+                        <span className="text-sm font-bold text-[#173B8F]">
+                          {Math.round(Number(stok.margin_persen))}%
+                        </span>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="ml-6 h-2 w-[calc(100%-1.5rem)] overflow-hidden rounded-full bg-[#EEF2F7]">
+                        <div
+                          className={`h-full rounded-full ${progressColors[i]}`}
+                          style={{
+                            width: progressWidths[i],
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+            ) : (
+              <p className="text-sm text-slate-500">
+                Belum ada data produk terlaris.
+              </p>
+            )}
           </div>
         </section>
+
+
+        {/* SISA STOK - KANAN */}
+        <section className="rounded-2xl border border-[#E6EDF6] bg-white p-6 shadow-sm">
+
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Package
+                className="text-[#0049A8]"
+                size={24}
+              />
+
+              <h2 className="font-bold text-[#001229]">
+                Sisa Stok Produk
+              </h2>
+            </div>
+
+            {stokKritisList.length > 0 && (
+              <span className="text-xs font-semibold text-red-500">
+                Peringatan Stok Menipis!
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-4">
+
+            {stokList.length > 0 ? (
+              stokList.slice(0, 5).map((stok) => {
+
+                const status = getStokStatus(stok.sisa_stok);
+                const colors = getStokColor(status);
+
+                // Maksimal stok untuk menentukan panjang progress
+                const maxStock = 50;
+
+                const progress =
+                  Math.min(
+                    (Number(stok.sisa_stok) / maxStock) * 100,
+                    100
+                  );
+
+                return (
+                  <div
+                    key={stok.id_produk}
+                    className="space-y-2"
+                  >
+
+                    {/* Nama + jumlah + status */}
+                    <div className="flex items-center gap-3">
+
+                      <span className="flex-1 text-sm font-semibold text-[#001229]">
+                        {stok.nama_produk}
+                      </span>
+
+                      <span className="text-sm font-bold text-[#001229]">
+                        {stok.sisa_stok} pcs
+                      </span>
+
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${colors.badge}`}
+                      >
+                        {status}
+                      </span>
+
+                    </div>
+
+                    {/* Progress stok */}
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#EEF2F7]">
+                      <div
+                        className={`h-full rounded-full ${colors.bar}`}
+                        style={{
+                          width: `${progress}%`,
+                        }}
+                      />
+                    </div>
+
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-slate-500">
+                Belum ada data stok barang.
+              </p>
+            )}
+
+          </div>
+        </section>
+
       </div>
 
       {stokKritisList.length > 0 && (
