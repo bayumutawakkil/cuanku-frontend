@@ -507,7 +507,7 @@ export default function TransactionContent() {
             </tbody>
           </table>
         </div>
-
+      </div>
       <div className="flex flex-col gap-3 border-t border-slate-100 p-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <span>Menampilkan {filtered.length} dari {data.length} transaksi</span>
         <div className="flex items-center gap-1">

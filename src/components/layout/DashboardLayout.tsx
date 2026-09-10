@@ -32,7 +32,7 @@ function parseSessionUser(snapshot: string): SessionUser {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [headerSearch, setHeaderSearch] = useState("");
+  const [globalSearch, setGlobalSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const sessionSnapshot = useSyncExternalStore(
@@ -51,6 +51,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const pageTitle = pageTitles[pathname] ?? "Dashboard";
+
   const handleGlobalSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -60,6 +61,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     router.push(`/transactions?search=${encodeURIComponent(keyword)}`);
   };
+
   return (
     <div className="min-h-screen bg-[#F4F9FF] text-[#001229]">
       <Sidebar />
@@ -172,9 +174,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           </div>
         </header>
-      
+
         <main className="p-5 lg:p-8">{children}</main>
-      
       </div>
     </div>
   );
