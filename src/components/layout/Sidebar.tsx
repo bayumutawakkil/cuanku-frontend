@@ -116,21 +116,20 @@ export default function Sidebar() {
         <div
           className="
             rounded-xl
-            bg-[#eaf3ff]/90
+            bg-[#cde0f5]/80
             p-4
-            shadow-[0_8px_20px_rgba(44,92,145,0.12)]
           "
         >
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-slate-300" />
+            <div className="h-11 w-11 shrink-0 rounded-full bg-[#d6d6d6]" />
 
             <div>
-              <h3 className="text-sm font-semibold text-[#33445a]">
+              <h3 className="text-[13px] font-bold leading-tight text-[#001229]">
                 {user.nama_UMKM ?? "Usaha belum diatur"}
               </h3>
 
-              <p className="text-xs text-slate-500">
-                {user.nama_lengkap ?? user.email ?? "Pemilik"}
+              <p className="mt-1 text-[11px] font-medium text-[#4b607a]">
+                Owner: {user.nama_lengkap ?? user.email ?? "Pemilik"}
               </p>
             </div>
           </div>

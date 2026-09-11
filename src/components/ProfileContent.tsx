@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, LogOut, Settings, ShieldCheck, User } from "lucide-react";
+import { BriefcaseBusiness, Pencil, RefreshCw, Settings, ShieldCheck, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearSession, getSessionUser, type SessionUser } from "../lib/session";
@@ -39,19 +39,27 @@ export default function ProfileContent() {
     <main className="px-0 pb-4 md:px-1 md:pb-6 lg:px-2 lg:pb-8">
       <div className="mx-auto max-w-[1400px]">
         <section className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-[0_10px_30px_rgba(74,113,158,0.12)] md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="h-24 w-24 rounded-full bg-[#dbe7f5]" />
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="h-24 w-24 rounded-full bg-[#eef4fb]" />
+              <div className="absolute bottom-1 right-1 h-6 w-6 rounded-full border-2 border-white bg-[#5a9aef]" />
+            </div>
             <div>
-              <h2 className="text-2xl font-bold text-[#34445b]">{displayName}</h2>
-              <div className="mt-2 flex flex-col items-start gap-2">
-                <span className="rounded-full bg-[#e5eef8] px-4 py-1 text-xs font-semibold text-[#4c6685]">Pemilik</span>
-                <span className="text-sm font-semibold text-[#34445b]">{valueOrDash(user.nama_UMKM)}</span>
+              <h2 className="text-[26px] font-bold text-[#1f3a5f]">{displayName}</h2>
+              <div className="mt-3 flex flex-col items-start gap-1.5">
+                <span className="rounded-full bg-[#eef4fb] px-3.5 py-1 text-xs font-semibold text-[#3b5982]">Pemilik</span>
+                <span className="text-[15px] font-semibold text-[#1f3a5f]">{valueOrDash(user.nama_UMKM)}</span>
               </div>
             </div>
           </div>
-          <button type="button" onClick={logout} className="flex items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-600">
-            <LogOut size={15} /> Keluar
-          </button>
+          <div className="flex flex-col gap-2.5">
+            <button type="button" className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
+              <Pencil size={15} /> Edit Profil
+            </button>
+            <button type="button" className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
+              <RefreshCw size={15} /> Multi User
+            </button>
+          </div>
         </section>
 
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">

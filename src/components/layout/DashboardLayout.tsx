@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Search, Bell, ChevronDown } from "lucide-react";
+import { Search, Bell, ChevronDown, User, RefreshCw, LogOut } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import { useState, useSyncExternalStore } from "react";
@@ -135,39 +135,57 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <button
               type="button"
               onClick={() => setShowProfileMenu((prev) => !prev)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2.5"
             >
-              <div className="h-9 w-9 rounded-full bg-slate-200" />
+              <div className="h-9 w-9 rounded-full bg-[#d9d9d9]" />
 
-              <div className="text-left">
-                <p className="text-xs font-bold text-[#001229]">
-                  {user.nama_lengkap ?? user.nama_UMKM ?? user.email ?? "Pengguna"}
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-bold text-[#001229]">
+                  {user.nama_lengkap ?? user.email ?? "Pengguna"}
                 </p>
-                <p className="text-[10px] text-slate-500">Pemilik</p>
+                <ChevronDown size={16} className="text-[#001229]" strokeWidth={2.5} />
               </div>
-
-              <ChevronDown size={16} className="text-slate-500" />
             </button>
 
             {showProfileMenu && (
-              <div className="absolute right-0 top-12 z-50 w-40 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-                <button
-                  type="button"
-                  onClick={() => router.push("/settings")}
-                  className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-[#001229] hover:bg-[#F4F9FF]"
-                >
-                  Pengaturan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearSession();
-                    router.push("/login");
-                  }}
-                  className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50"
-                >
-                  Log Out
-                </button>
+              <div className="absolute right-0 top-12 z-50 w-[280px] rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_10px_40px_rgba(0,0,0,0.1)]">
+                <div className="flex flex-col items-center pb-4 text-center">
+                  <div className="mb-3 h-[72px] w-[72px] rounded-full bg-[#d9d9d9]" />
+                  <p className="text-base font-bold text-[#001229]">
+                    {user.nama_lengkap ?? user.email ?? "Pengguna"}
+                  </p>
+                  <div className="mt-1.5 rounded-full bg-[#e5eef8] px-3.5 py-1 text-[11px] font-bold text-[#1f3a5f]">
+                    Owner - {user.nama_UMKM ?? "Usaha belum diatur"}
+                  </div>
+                </div>
+
+                <div className="mb-2 border-t border-slate-200" />
+
+                <div className="flex flex-col space-y-1 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/settings")}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#001229] hover:bg-[#F4F9FF]"
+                  >
+                    <User size={18} strokeWidth={2.5} /> Profil Saya
+                  </button>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#001229] hover:bg-[#F4F9FF]"
+                  >
+                    <RefreshCw size={18} strokeWidth={2.5} /> Multi User
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearSession();
+                      router.push("/login");
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#ff4c4c] hover:bg-red-50"
+                  >
+                    <LogOut size={18} strokeWidth={2.5} /> Log Out
+                  </button>
+                </div>
               </div>
             )}
           </div>
