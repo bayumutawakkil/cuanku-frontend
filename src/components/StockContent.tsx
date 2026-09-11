@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Bell, Plus, Search, Pencil, Trash2, UploadCloud } from "lucide-react";
+import { AlertTriangle, Bell, Plus, Search, Pencil, Trash2, UploadCloud, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Product } from "../types";
@@ -20,6 +21,7 @@ export default function StockContent() {
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toast, setToast] = useState("");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     apiRequest<unknown>("/transaksi/stok")
@@ -92,6 +94,83 @@ export default function StockContent() {
       );
   };
 
+  const handleExportData = () => {
+    if (!filtered.length) {
+      alert("Tidak ada data stok untuk diekspor.");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(filtered.map((product) => ({
+      Nama: product.name,
+      Stok: product.stock,
+      Satuan: product.unit,
+      "Harga Beli": product.buyPrice,
+      "Harga Jual": product.sellPrice,
+    })));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stok Produk");
+    XLSX.writeFile(workbook, "data-stok-produk.xlsx");
+  };
+
+  const handleImportData = async (file: File) => {
+    setImporting(true);
+    setError("");
+
+    try {
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (!worksheet) throw new Error("File Excel tidak memiliki sheet yang bisa dibaca.");
+
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" });
+      if (!rows.length) throw new Error("File Excel tidak memiliki data stok.");
+
+      const imported = rows.map((row, index) => {
+        const name = String(row.Nama ?? row.nama ?? row["Nama Produk"] ?? row.nama_produk).trim();
+        const stock = Number(row.Stok ?? row.stok ?? row.sisa_stok);
+        const unit = String(row.Satuan ?? row.satuan ?? "unit").trim() || "unit";
+        const buyPrice = Number(String(row["Harga Beli"] ?? row.harga_beli).replace(/[^\d.-]/g, ""));
+        const sellPrice = Number(String(row["Harga Jual"] ?? row.harga_jual).replace(/[^\d.-]/g, ""));
+
+        if (!name || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(buyPrice) || buyPrice <= 0 || !Number.isFinite(sellPrice) || sellPrice <= 0) {
+          throw new Error(`Data pada baris ${index + 2} tidak valid.`);
+        }
+
+        return { name, stock, unit, buyPrice, sellPrice };
+      });
+
+      await Promise.all(imported.map((product) => apiRequest("/transaksi/stok", {
+        method: "POST",
+        body: JSON.stringify({
+          nama_produk: product.name,
+          sisa_stok: product.stock,
+          harga_beli: product.buyPrice,
+          harga_jual: product.sellPrice,
+        }),
+      })));
+
+      setProducts((previous) => [
+        ...imported.map((product, index) => ({
+          id: Date.now() + index,
+          ...product,
+          status: product.stock <= 5 ? "Kritis" : product.stock <= 10 ? "Menipis" : "Aman",
+        } as Product)),
+        ...previous,
+      ]);
+      setToast(`${imported.length} produk berhasil diimpor`);
+      setShowToast(true);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Gagal mengimpor stok.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleImportInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const [file] = Array.from(event.target.files ?? []);
+    if (file) void handleImportData(file);
+    event.target.value = "";
+  };
+
   const totalStockValue = products.reduce((total, product) => total + product.stock * product.buyPrice, 0);
   const lowStockCount = products.filter((product) => product.stock <= 10).length;
   const criticalStockCount = products.filter(
@@ -144,6 +223,11 @@ export default function StockContent() {
         <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:justify-between">
           <div><h2 className="text-xl font-bold text-[#001229]">Daftar Stok Produk</h2></div>
           <div className="flex gap-3">
+          <label className="flex cursor-pointer items-center gap-2 rounded-full border border-[#6FA8F7] px-3 py-1.5 text-sm font-semibold text-[#356EBB] transition hover:bg-[#F1F7FF]">
+            <UploadCloud size={16} />
+            {importing ? "Mengimpor..." : "Impor XLSX"}
+            <input type="file" accept=".xlsx" className="hidden" onChange={handleImportInput} disabled={importing} />
+          </label>
           <div className="relative">
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari produk..." 
               className="rounded-xl border border-slate-200 px-3 py-1.5 pl-3 pr-3"/>
@@ -170,6 +254,18 @@ export default function StockContent() {
         </div>
         <div className="border-t p-5 text-sm text-slate-500">Menampilkan {filtered.length} dari {products.length} produk</div>
       </div>
+
+      {/* EKSPOR DATA DI LUAR CONTAINER */}
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={handleExportData}
+                className="flex items-center gap-2 rounded-full bg-[#6FA8F7] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#5F99EA]"
+              >
+                <Download size={15} />
+                Ekspor Data
+              </button>
+            </div>
 
       <Modal
         open={open}
@@ -208,6 +304,8 @@ export default function StockContent() {
                 type="file"
                 accept=".xlsx"
                 className="hidden"
+                onChange={handleImportInput}
+                disabled={importing}
               />
             </label>
           </div>

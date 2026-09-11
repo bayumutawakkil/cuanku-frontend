@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Plus, PencilLine, Trash2, Calendar, ChevronLeft, ChevronRight, UploadCloud, Bell, } from "lucide-react";
+import { Search, Plus, PencilLine, Trash2, Calendar, ChevronLeft, ChevronRight, UploadCloud, Bell, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import Modal from "./common/Modal";
 import type { Transaction } from "../types";
 import { apiRequest, unwrapList } from "../lib/api";
@@ -24,6 +25,7 @@ export default function TransactionContent() {
   const globalSearch = searchParams.get("search") || "";
   const [showNotification, setShowNotification] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [importing, setImporting] = useState(false);
 
   const formatDisplayDate = (date: string) => {
     if (!date) return "-";
@@ -110,43 +112,80 @@ export default function TransactionContent() {
       return;
     }
 
-    const headers = [
-      "Tanggal",
-      "Jenis",
-      "Kategori",
-      "Catatan",
-      "Nominal",
-    ];
+    const worksheet = XLSX.utils.json_to_sheet(filtered.map((transaction) => ({
+      Tanggal: transaction.date,
+      Jenis: transaction.type,
+      Kategori: transaction.category,
+      Catatan: transaction.note,
+      Nominal: transaction.amount,
+    })));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transaksi");
+    XLSX.writeFile(workbook, "data-transaksi.xlsx");
+  };
 
-    const rows = filtered.map((t) => [
-      t.date,
-      t.type,
-      t.category,
-      t.note,
-      t.amount,
-    ]);
+  const handleImportData = async (file: File) => {
+    setImporting(true);
+    setError("");
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) =>
-        row
-          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
-          .join(",")
-      ),
-    ].join("\n");
+    try {
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (!worksheet) throw new Error("File Excel tidak memiliki sheet yang bisa dibaca.");
 
-    const blob = new Blob([csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" });
+      if (!rows.length) throw new Error("File Excel tidak memiliki data transaksi.");
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+      const imported = rows.map((row, index) => {
+        const dateValue = row.Tanggal ?? row.tanggal;
+        const typeValue = row.Jenis ?? row.jenis;
+        const categoryValue = row.Kategori ?? row.kategori;
+        const noteValue = row.Catatan ?? row.catatan ?? row.Keterangan ?? row.keterangan;
+        const amountValue = row.Nominal ?? row.nominal ?? row.Jumlah ?? row.jumlah;
+        const date = dateValue instanceof Date
+          ? dateValue.toISOString().slice(0, 10)
+          : String(dateValue).trim();
+        const amount = Number(String(amountValue).replace(/[^\d.-]/g, ""));
 
-    link.href = url;
-    link.download = "data-transaksi.csv";
-    link.click();
+        if (!date || !["Pemasukan", "Pengeluaran"].includes(String(typeValue)) || !String(categoryValue).trim() || !Number.isFinite(amount) || amount <= 0) {
+          throw new Error(`Data pada baris ${index + 2} tidak valid.`);
+        }
 
-    URL.revokeObjectURL(url);
+        return {
+          id: Date.now() + index,
+          date: formatDisplayDate(date),
+          type: String(typeValue) as Transaction["type"],
+          category: String(categoryValue).trim(),
+          note: String(noteValue).trim() || "-",
+          amount,
+          apiDate: date,
+        };
+      });
+
+      await Promise.all(imported.map((transaction) => apiRequest("/transaksi", {
+        method: "POST",
+        body: JSON.stringify({
+          jenis_transaksi: transaction.type,
+          kategori: transaction.category,
+          jumlah: transaction.amount,
+          keterangan: transaction.note,
+          tanggal: transaction.apiDate,
+        }),
+      })));
+
+      setData((previous) => [...imported.map(({ apiDate: _apiDate, ...transaction }) => transaction), ...previous]);
+      showTransactionNotification(imported.length);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Gagal mengimpor transaksi.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleImportInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const [file] = Array.from(event.target.files ?? []);
+    if (file) void handleImportData(file);
+    event.target.value = "";
   };
 
   const handleEdit = (transaction: Transaction) => {
@@ -205,7 +244,8 @@ export default function TransactionContent() {
             jenis_transaksi: transaction.type,
             kategori: transaction.category,
             jumlah: transaction.amount,
-            keterangan: transaction.note
+            keterangan: transaction.note,
+            tanggal: String(form.get("date")),
         }),
       });
 
@@ -259,6 +299,12 @@ export default function TransactionContent() {
         </h2>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#6FA8F7] px-5 py-2.5 text-sm font-semibold text-[#356EBB] transition hover:bg-[#F1F7FF]">
+            <UploadCloud size={16} />
+            {importing ? "Mengimpor..." : "Impor XLSX"}
+            <input type="file" accept=".xlsx" className="hidden" onChange={handleImportInput} disabled={importing} />
+          </label>
 
           {/* SEARCH */}
           <div className="relative">
@@ -530,6 +576,7 @@ export default function TransactionContent() {
           onClick={handleExportData}
           className="flex items-center gap-2 rounded-full bg-[#6FA8F7] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#5F99EA]"
         >
+          <Download size={15} />
           Ekspor Data
         </button>
       </div>
@@ -575,6 +622,8 @@ export default function TransactionContent() {
                 type="file"
                 accept=".xlsx"
                 className="hidden"
+                onChange={handleImportInput}
+                disabled={importing}
               />
             </label>
           </div>
