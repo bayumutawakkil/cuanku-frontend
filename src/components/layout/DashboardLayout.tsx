@@ -7,6 +7,8 @@ import Sidebar from "./Sidebar";
 import { useState, useSyncExternalStore } from "react";
 import type { SessionUser } from "../../lib/session";
 import { clearSession } from "../../lib/session";
+import Button from "../ui/Button";
+import MultiUserModal from "../MultiUserModal";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -36,6 +38,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMultiUserModalOpen, setIsMultiUserModalOpen] = useState(false);
   const sessionSnapshot = useSyncExternalStore(
     subscribeToSession,
     getSessionSnapshot,
@@ -162,29 +165,39 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div className="mb-2 border-t border-slate-200" />
 
                 <div className="flex flex-col space-y-1 pt-1">
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => router.push("/settings")}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#001229] hover:bg-[#F4F9FF]"
+                    variant="ghost"
+                    size="md"
+                    fullWidth
+                    className="justify-start gap-3"
                   >
                     <User size={18} strokeWidth={2.5} /> Profil Saya
-                  </button>
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#001229] hover:bg-[#F4F9FF]"
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setIsMultiUserModalOpen(true);
+                    }}
+                    variant="ghost"
+                    size="md"
+                    fullWidth
+                    className="justify-start gap-3"
                   >
                     <RefreshCw size={18} strokeWidth={2.5} /> Multi User
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     onClick={() => {
                       clearSession();
                       router.push("/login");
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-[#ff4c4c] hover:bg-red-50"
+                    variant="danger-ghost"
+                    size="md"
+                    fullWidth
+                    className="justify-start gap-3"
                   >
                     <LogOut size={18} strokeWidth={2.5} /> Log Out
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -195,6 +208,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <main className="p-5 lg:p-8">{children}</main>
       </div>
+
+      <MultiUserModal
+        isOpen={isMultiUserModalOpen}
+        onClose={() => setIsMultiUserModalOpen(false)}
+        users={[
+          {
+            id: user.id_user || "owner",
+            name: user.nama_lengkap || user.email || "Pemilik",
+            role: "Pemilik",
+            access: "Akses Penuh",
+          },
+        ]}
+      />
     </div>
   );
 }

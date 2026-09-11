@@ -4,6 +4,8 @@ import { BriefcaseBusiness, Camera, Pencil, RefreshCw, Settings, ShieldCheck, Us
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearSession, getSessionUser, type SessionUser } from "../lib/session";
+import Button from "./ui/Button";
+import MultiUserModal from "./MultiUserModal";
 
 const valueOrDash = (value?: string) => value || "-";
 
@@ -11,6 +13,7 @@ export default function ProfileContent() {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser>({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isMultiUserModalOpen, setIsMultiUserModalOpen] = useState(false);
 
   useEffect(() => {
     setUser(getSessionUser());
@@ -54,12 +57,12 @@ export default function ProfileContent() {
             </div>
           </div>
           <div className="flex flex-col gap-2.5">
-            <button type="button" onClick={() => setIsEditModalOpen(true)} className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
+            <Button onClick={() => setIsEditModalOpen(true)} size="md" className="!rounded-[10px] !text-xs font-semibold">
               <Pencil size={15} /> Edit Profil
-            </button>
-            <button type="button" className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
+            </Button>
+            <Button onClick={() => setIsMultiUserModalOpen(true)} size="md" className="!rounded-[10px] !text-xs font-semibold">
               <RefreshCw size={15} /> Multi User
-            </button>
+            </Button>
           </div>
         </section>
 
@@ -118,16 +121,29 @@ export default function ProfileContent() {
             </div>
 
             <div className="mt-10 flex items-center justify-center gap-4">
-              <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-full px-6 py-3 text-[13px] font-bold text-[#001229] hover:bg-slate-50">
+              <Button onClick={() => setIsEditModalOpen(false)} variant="secondary" size="lg" radius="full">
                 Batal
-              </button>
-              <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-full bg-[#5a9aef] px-6 py-3 text-[13px] font-bold text-white shadow-[0_8px_20px_rgba(90,154,239,0.25)] transition hover:bg-[#4a89db] hover:shadow-[0_8px_20px_rgba(90,154,239,0.35)]">
+              </Button>
+              <Button onClick={() => setIsEditModalOpen(false)} size="lg" radius="full">
                 Simpan Perubahan
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
+
+      <MultiUserModal
+        isOpen={isMultiUserModalOpen}
+        onClose={() => setIsMultiUserModalOpen(false)}
+        users={[
+          {
+            id: user.id_user || "owner",
+            name: user.nama_lengkap || user.email || "Pemilik",
+            role: "Pemilik",
+            access: "Akses Penuh",
+          },
+        ]}
+      />
     </main>
   );
 }
