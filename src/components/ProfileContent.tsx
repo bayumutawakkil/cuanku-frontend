@@ -1,6 +1,6 @@
 "use client";
 
-import { BriefcaseBusiness, Pencil, RefreshCw, Settings, ShieldCheck, User } from "lucide-react";
+import { BriefcaseBusiness, Camera, Pencil, RefreshCw, Settings, ShieldCheck, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearSession, getSessionUser, type SessionUser } from "../lib/session";
@@ -10,6 +10,7 @@ const valueOrDash = (value?: string) => value || "-";
 export default function ProfileContent() {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser>({});
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     setUser(getSessionUser());
@@ -53,7 +54,7 @@ export default function ProfileContent() {
             </div>
           </div>
           <div className="flex flex-col gap-2.5">
-            <button type="button" className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
+            <button type="button" onClick={() => setIsEditModalOpen(true)} className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
               <Pencil size={15} /> Edit Profil
             </button>
             <button type="button" className="flex items-center justify-center gap-2 rounded-[10px] bg-[#5a9aef] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4a89db]">
@@ -77,6 +78,56 @@ export default function ProfileContent() {
           </section>
         </div>
       </div>
+
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#001229]/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-[500px] rounded-[24px] bg-white p-8 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[#001229]">Edit Profil</h2>
+              <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-full border border-slate-200 p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600">
+                <X size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+
+            <div className="mt-8 flex justify-center">
+              <div className="relative">
+                <div className="h-[120px] w-[120px] rounded-full bg-[#eef4fb]" />
+                <button type="button" className="absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-white bg-[#5a9aef] text-white shadow-sm hover:bg-[#4a89db]">
+                  <Camera size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8 space-y-4">
+              <div>
+                <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nama Lengkap</label>
+                <input type="text" defaultValue={user.nama_lengkap ?? user.nama_UMKM ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+              </div>
+              <div>
+                <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nama Pengguna</label>
+                <input type="text" defaultValue={user.username ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+              </div>
+              <div>
+                <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Email</label>
+                <input type="email" defaultValue={user.email ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+              </div>
+              <div>
+                <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nomor Telepon</label>
+                <input type="text" defaultValue={user.nomor_telepon ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+              </div>
+            </div>
+
+            <div className="mt-10 flex items-center justify-center gap-4">
+              <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-full px-6 py-3 text-[13px] font-bold text-[#001229] hover:bg-slate-50">
+                Batal
+              </button>
+              <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-full bg-[#5a9aef] px-6 py-3 text-[13px] font-bold text-white shadow-[0_8px_20px_rgba(90,154,239,0.25)] transition hover:bg-[#4a89db] hover:shadow-[0_8px_20px_rgba(90,154,239,0.35)]">
+                Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
