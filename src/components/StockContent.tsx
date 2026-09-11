@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Bell, Plus, Search, Pencil, Trash2, UploadCloud } from "lucide-react";
 import Button from "./common/Button";
 import Modal from "./common/Modal";
 import type { Product } from "../types";
@@ -135,6 +135,10 @@ export default function StockContent() {
             strokeWidth={2}
             className="shrink-0"
           />
+
+          <span>Stok produk kritis perlu segera diperbarui.</span>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-[#E6EDF6] bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:justify-between">

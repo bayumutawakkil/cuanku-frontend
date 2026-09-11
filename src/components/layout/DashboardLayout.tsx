@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleGlobalSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const keyword = headerSearch.trim();
+    const keyword = globalSearch.trim();
 
     if (!keyword) return;
 
@@ -83,8 +83,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             />
 
             <input
-              value={headerSearch}
-              onChange={(e) => setHeaderSearch(e.target.value)}
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
               placeholder="Cari Transaksi, Stok..."
               className="
                 w-48

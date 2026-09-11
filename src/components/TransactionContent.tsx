@@ -522,8 +522,6 @@ export default function TransactionContent() {
         </div>
       </div>
 
-      </div>
-
 
       {/* EKSPOR DATA DI LUAR CONTAINER */}
       <div className="mt-4 flex justify-end">
