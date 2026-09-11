@@ -1,4 +1,5 @@
 export interface SessionUser {
+  id_user?: string | number;
   nama_UMKM?: string;
   nama_lengkap?: string;
   username?: string;
