@@ -175,8 +175,11 @@ export default function TransactionContent() {
 
       setData((previous) => [...imported.map(({ apiDate: _apiDate, ...transaction }) => transaction), ...previous]);
       showTransactionNotification(imported.length);
+      setOpen(false);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Gagal mengimpor transaksi.");
+      const msg = requestError instanceof Error ? requestError.message : "Gagal mengimpor transaksi.";
+      setError(msg);
+      alert(msg);
     } finally {
       setImporting(false);
     }

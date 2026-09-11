@@ -178,8 +178,11 @@ export default function StockContent() {
       ]);
       setToast(`${imported.length} produk berhasil diimpor`);
       setShowToast(true);
+      setOpen(false);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Gagal mengimpor stok.");
+      const msg = requestError instanceof Error ? requestError.message : "Gagal mengimpor stok.";
+      setError(msg);
+      alert(msg);
     } finally {
       setImporting(false);
     }

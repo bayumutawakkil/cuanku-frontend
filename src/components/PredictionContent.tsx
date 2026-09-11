@@ -9,6 +9,11 @@ type Forecast = {
   prediksi_rp: number;
 };
 
+type HistoryData = {
+  tanggal: string;
+  total_rp: number;
+};
+
 type Stock = {
   nama_produk: string;
   sisa_stok: number;
@@ -16,6 +21,7 @@ type Stock = {
 
 export default function PredictionContent() {
   const [forecast, setForecast] = useState<Forecast[]>([]);
+  const [history, setHistory] = useState<HistoryData[]>([]);
   const [stock, setStock] = useState<Stock[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -28,16 +34,39 @@ export default function PredictionContent() {
         body: JSON.stringify({ n_hari: 7 }),
       }),
       apiRequest<unknown>("/transaksi/stok"),
+      apiRequest<unknown>("/transaksi"),
     ])
-      .then(([predictionResponse, stockResponse]) => {
+      .then(([predictionResponse, stockResponse, transResponse]) => {
         const body = predictionResponse as { result?: { data?: Forecast[] }; data?: Forecast[] };
         setForecast(body.result?.data ?? body.data ?? []);
+        
         setStock(
           unwrapList<Record<string, unknown>>(stockResponse, ["products", "produk", "stocks", "stok", "items"]).map((item) => ({
             nama_produk: String(item.nama_produk ?? item.name ?? "-"),
             sisa_stok: Number(item.sisa_stok ?? item.stock ?? item.stok ?? 0),
           }))
         );
+
+        const transBody = unwrapList<Record<string, unknown>>(transResponse, ["transactions", "transaksi", "items"]);
+        const histMap = new Map<string, number>();
+        transBody.forEach((t) => {
+          const type = String(t.type ?? t.transaction_type ?? t.jenis ?? t.jenis_transaksi);
+          if (type === "Pemasukan") {
+            const dateVal = t.date ?? t.tanggal ?? "";
+            const d = new Date(String(dateVal));
+            if (!Number.isNaN(d.getTime())) {
+              const dateStr = d.toISOString().split("T")[0];
+              const amount = Number(t.amount ?? t.nominal ?? t.jumlah ?? 0);
+              histMap.set(dateStr, (histMap.get(dateStr) || 0) + amount);
+            }
+          }
+        });
+
+        const histArray = Array.from(histMap.entries())
+          .map(([tanggal, total_rp]) => ({ tanggal, total_rp }))
+          .sort((a, b) => new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime());
+
+        setHistory(histArray.slice(-14)); // Ambil max 14 hari terakhir untuk grafik
       })
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat prediksi."))
       .finally(() => setLoading(false));
@@ -50,24 +79,48 @@ export default function PredictionContent() {
   const restock = stock.filter((item) => item.sisa_stok <= 10).sort((a, b) => a.sisa_stok - b.sisa_stok);
   const maxForecast = Math.max(...forecast.map((item) => item.prediksi_rp), 1);
   const money = (value: number) => `Rp ${value.toLocaleString("id-ID")}`;
-  const chartPoints = useMemo(() => {
-    if (!forecast.length) return "";
+  const chartData = useMemo(() => {
+    if (!forecast.length && !history.length) return null;
 
-    const max = Math.max(...forecast.map((item) => item.prediksi_rp), 1);
+    const maxHist = history.length ? Math.max(...history.map((h) => h.total_rp)) : 0;
+    const maxPred = forecast.length ? Math.max(...forecast.map((f) => f.prediksi_rp)) : 0;
+    const maxY = Math.max(maxHist, maxPred, 1);
 
-    return forecast
-      .map((item, index) => {
-        const x =
-          forecast.length === 1
-            ? 50
-            : (index / (forecast.length - 1)) * 100;
+    const totalPoints = history.length + forecast.length;
+    const stepX = totalPoints > 1 ? 100 / (totalPoints - 1) : 50;
 
-        const y = 90 - (item.prediksi_rp / max) * 70;
+    const historyCoords = history.map((h, i) => ({
+      x: i * stepX,
+      y: 90 - (h.total_rp / maxY) * 70,
+      tanggal: h.tanggal,
+      val: h.total_rp,
+    }));
 
-        return `${x},${y}`;
-      })
-      .join(" ");
-  }, [forecast]);
+    const forecastCoords = forecast.map((f, i) => ({
+      x: (history.length + i) * stepX,
+      y: 90 - (f.prediksi_rp / maxY) * 70,
+      tanggal: f.tanggal,
+      val: f.prediksi_rp,
+    }));
+
+    const histPoints = historyCoords.map((c) => `${c.x},${c.y}`).join(" ");
+    let predPoints = forecastCoords.map((c) => `${c.x},${c.y}`).join(" ");
+
+    if (history.length > 0 && forecast.length > 0) {
+      const lastHist = historyCoords[historyCoords.length - 1];
+      predPoints = `${lastHist.x},${lastHist.y} ${predPoints}`;
+    }
+
+    const allDates = [...history.map((h) => h.tanggal), ...forecast.map((f) => f.tanggal)];
+    const labels = [];
+    if (allDates.length > 0) {
+      labels.push(allDates[0]);
+      if (allDates.length > 2) labels.push(allDates[Math.floor(allDates.length / 2)]);
+      if (allDates.length > 1) labels.push(allDates[allDates.length - 1]);
+    }
+
+    return { histPoints, predPoints, historyCoords, forecastCoords, labels };
+  }, [forecast, history]);
 
   if (loading) return <div className="p-8 text-center text-slate-500">Memuat prediksi...</div>;
 
@@ -154,7 +207,7 @@ export default function PredictionContent() {
               <div className="border-t border-dashed border-slate-200" />
             </div>
 
-            {forecast.length > 0 ? (
+            {chartData ? (
               <svg
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
@@ -162,63 +215,64 @@ export default function PredictionContent() {
               >
 
                 {/* GARIS PREDIKSI */}
-                <polyline
-                  points={chartPoints}
-                  fill="none"
-                  stroke="#F59E0B"
-                  strokeWidth="1.2"
-                  strokeDasharray="3 2"
-                  vectorEffect="non-scaling-stroke"
-                />
+                {chartData.predPoints && (
+                  <polyline
+                    points={chartData.predPoints}
+                    fill="none"
+                    stroke="#F59E0B"
+                    strokeWidth="1.2"
+                    strokeDasharray="3 2"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
 
                 {/* GARIS HISTORIS */}
-                <polyline
-                  points={chartPoints}
-                  fill="none"
-                  stroke="#173B8F"
-                  strokeWidth="1.5"
-                  vectorEffect="non-scaling-stroke"
-                />
+                {chartData.histPoints && (
+                  <polyline
+                    points={chartData.histPoints}
+                    fill="none"
+                    stroke="#173B8F"
+                    strokeWidth="1.5"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
 
-                {/* TITIK */}
-                {forecast.map((item, index) => {
-                  const max = Math.max(
-                    ...forecast.map((item) => item.prediksi_rp),
-                    1
-                  );
+                {/* TITIK HISTORIS */}
+                {chartData.historyCoords.map((c) => (
+                  <circle
+                    key={`hist-${c.tanggal}`}
+                    cx={c.x}
+                    cy={c.y}
+                    r="1.3"
+                    fill="#173B8F"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
 
-                  const x =
-                    forecast.length === 1
-                      ? 50
-                      : (index / (forecast.length - 1)) * 100;
-
-                  const y =
-                    90 - (item.prediksi_rp / max) * 70;
-
-                  return (
-                    <circle
-                      key={item.tanggal}
-                      cx={x}
-                      cy={y}
-                      r="1.3"
-                      fill="#173B8F"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  );
-                })}
+                {/* TITIK PREDIKSI */}
+                {chartData.forecastCoords.map((c) => (
+                  <circle
+                    key={`pred-${c.tanggal}`}
+                    cx={c.x}
+                    cy={c.y}
+                    r="1.3"
+                    fill="#F59E0B"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
               </svg>
             ) : (
               <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                Belum ada hasil prediksi.
+                Belum ada data riwayat atau prediksi.
               </div>
             )}
 
             {/* LABEL TANGGAL */}
-            {forecast.length > 0 && (
+            {chartData && chartData.labels.length > 0 && (
               <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] text-slate-400">
-                {forecast.map((item) => (
-                  <span key={item.tanggal}>
-                    {new Date(item.tanggal).toLocaleDateString("id-ID", {
+                {chartData.labels.map((dateStr, i) => (
+                  <span key={`${dateStr}-${i}`}>
+                    {new Date(dateStr).toLocaleDateString("id-ID", {
                       day: "2-digit",
                       month: "short",
                     })}
