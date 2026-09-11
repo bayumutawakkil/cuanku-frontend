@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { UserRound, KeyRound, } from "lucide-react";
+import { UserRound, KeyRound, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import InputField from "./InputField";
 import GoogleIcon from "../ui/GoogleIcon";
 import Button from "../ui/Button";
 import { apiRequest } from "../../lib/api";
-import { saveSessionUser } from "../../lib/session";
+import { saveSession } from "../../lib/session";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -31,8 +31,7 @@ export default function LoginForm() {
       
       const token = response.token;
       if (token) {
-        localStorage.setItem("cuanku_token", token);
-        saveSessionUser(response.user ?? null);
+        saveSession(token, response.user ?? null, rememberMe);
         router.push("/dashboard");
       } else {
         throw new Error("Token tidak ditemukan di respons server.");
@@ -89,6 +88,7 @@ export default function LoginForm() {
 
           <button
             type="button"
+            onClick={() => router.push("/forgot-password")}
             className="text-sm font-medium text-blue-500 transition hover:text-blue-700 hover:underline"
           >
             Lupa kata sandi?

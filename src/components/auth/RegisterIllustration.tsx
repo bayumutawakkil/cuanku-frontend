@@ -49,7 +49,7 @@ export default function RegisterIllustration() {
       />
 
       {/* Back Button */}
-      <button
+      <a
         className="
           relative
           z-10
@@ -59,9 +59,10 @@ export default function RegisterIllustration() {
           transition
           hover:text-white
         "
+        href="/"
       >
         ← Kembali
-      </button>
+      </a>
 
       {/* Content */}
       <div className="relative z-10 mt-auto mb-10">

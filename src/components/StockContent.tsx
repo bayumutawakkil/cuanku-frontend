@@ -22,6 +22,7 @@ export default function StockContent() {
   const [showToast, setShowToast] = useState(false);
   const [toast, setToast] = useState("");
   const [importing, setImporting] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     apiRequest<unknown>("/transaksi/stok")
@@ -56,13 +57,13 @@ export default function StockContent() {
       harga_beli: Number(f.get("buy")),
       harga_jual: Number(f.get("sell")),
     };
-    apiRequest("/transaksi/stok", {
-      method: "POST",
+    apiRequest(`/transaksi/stok${editingProduct ? `/${editingProduct.id}` : ""}`, {
+      method: editingProduct ? "PUT" : "POST",
       body: JSON.stringify(product),
     })
       .then(() => {
         const newProduct = {
-          id: Date.now(),
+          id: editingProduct?.id ?? Date.now(),
           name: product.nama_produk,
           stock,
           unit: String(f.get("unit")),
@@ -76,13 +77,16 @@ export default function StockContent() {
               : "Aman",
         } as Product;
 
-        setProducts((current) => [...current, newProduct]);
-
-        // Tambahkan notifikasi ke header
-        addNotification(
-          `1 Produk baru telah ditambahkan: ${product.nama_produk}`
+        setProducts((current) => editingProduct
+          ? current.map((item) => item.id === editingProduct.id ? newProduct : item)
+          : [...current, newProduct]
         );
 
+        if (!editingProduct) {
+          addNotification(`1 Produk baru telah ditambahkan: ${product.nama_produk}`);
+        }
+
+        setEditingProduct(null);
         setOpen(false);
       })
       .catch((requestError) =>
@@ -92,6 +96,22 @@ export default function StockContent() {
             : "Gagal menyimpan produk."
         )
       );
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setOpen(true);
+  };
+
+  const handleDeleteProduct = async (product: Product) => {
+    if (!window.confirm(`Hapus produk ${product.name}?`)) return;
+
+    try {
+      await apiRequest(`/transaksi/stok/${product.id}`, { method: "DELETE" });
+      setProducts((current) => current.filter((item) => item.id !== product.id));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Gagal menghapus produk.");
+    }
   };
 
   const handleExportData = () => {
@@ -223,18 +243,16 @@ export default function StockContent() {
         <div className="flex flex-col gap-4 border-b border-slate-100 p-6 lg:flex-row lg:justify-between">
           <div><h2 className="text-xl font-bold text-[#001229]">Daftar Stok Produk</h2></div>
           <div className="flex gap-3">
-          <label className="flex cursor-pointer items-center gap-2 rounded-full border border-[#6FA8F7] px-3 py-1.5 text-sm font-semibold text-[#356EBB] transition hover:bg-[#F1F7FF]">
-            <UploadCloud size={16} />
-            {importing ? "Mengimpor..." : "Impor XLSX"}
-            <input type="file" accept=".xlsx" className="hidden" onChange={handleImportInput} disabled={importing} />
-          </label>
           <div className="relative">
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari produk..." 
               className="rounded-xl border border-slate-200 px-3 py-1.5 pl-3 pr-3"/>
           </div>
           
           <Button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setEditingProduct(null);
+              setOpen(true);
+            }}
             className="rounded-full bg-[#6FA8F7] px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5F99EA]"
           >
             <Plus size={17} className="mr-2 inline" />
@@ -248,7 +266,7 @@ export default function StockContent() {
             <tbody>{loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Memuat stok...</td></tr>}{error && !loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-red-600">{error}</td></tr>}{filtered.map(p => <tr key={p.id} className="border-t border-slate-100">
               <td className="px-5 py-4 font-medium">{p.name}</td><td className="px-5 py-4">{p.stock} {p.unit}</td><td className="px-5 py-4">{money(p.buyPrice)}</td><td className="px-5 py-4">{money(p.sellPrice)}</td>
               <td className="px-5 py-4 font-bold text-emerald-600">+{Math.round((p.sellPrice/p.buyPrice-1)*100)}%</td>
-              <td className="px-5 py-4"><button className="mr-2 p-2 text-[#0049A8]"><Pencil size={16}/></button><button onClick={() => setProducts(products.filter(x=>x.id!==p.id))} className="p-2 text-red-500"><Trash2 size={16}/></button></td>
+              <td className="px-5 py-4"><button onClick={() => handleEditProduct(p)} className="mr-2 p-2 text-[#0049A8]" title="Edit produk"><Pencil size={16}/></button><button onClick={() => void handleDeleteProduct(p)} className="p-2 text-red-500" title="Hapus produk"><Trash2 size={16}/></button></td>
             </tr>)}</tbody>
           </table>
         </div>
@@ -269,8 +287,11 @@ export default function StockContent() {
 
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
-        title="Tambah Produk Baru"
+        onClose={() => {
+          setOpen(false);
+          setEditingProduct(null);
+        }}
+        title={editingProduct ? "Edit Produk" : "Tambah Produk Baru"}
         width="max-w-[360px]"
       >
         <form onSubmit={addProduct} className="-mt-5 space-y-4">
@@ -319,6 +340,7 @@ export default function StockContent() {
             <input
               name="name"
               required
+              defaultValue={editingProduct?.name || ""}
               placeholder="Nama Produk"
               className="h-[29px] w-full rounded-lg bg-[#F1F5F9] px-3 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#6FA8F7]"
             />
@@ -334,6 +356,7 @@ export default function StockContent() {
               name="stock"
               type="number"
               required
+              defaultValue={editingProduct?.stock || ""}
               placeholder="1 karton"
               className="h-[29px] w-full rounded-lg bg-[#F1F5F9] px-3 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#6FA8F7]"
             />
@@ -354,6 +377,7 @@ export default function StockContent() {
                 name="buy"
                 type="number"
                 required
+                defaultValue={editingProduct?.buyPrice || ""}
                 placeholder="2.800"
                 className="h-[29px] w-full rounded-lg bg-[#F1F5F9] py-2 pl-8 pr-3 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#6FA8F7]"
               />
@@ -375,6 +399,7 @@ export default function StockContent() {
                 name="sell"
                 type="number"
                 required
+                defaultValue={editingProduct?.sellPrice || ""}
                 placeholder="3.500"
                 className="h-[29px] w-full rounded-lg bg-[#F1F5F9] py-2 pl-8 pr-3 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#6FA8F7]"
               />
@@ -387,7 +412,10 @@ export default function StockContent() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setEditingProduct(null);
+              }}
               className="rounded-lg px-3 py-1.5 text-[9px]"
             >
               Batal
@@ -397,7 +425,7 @@ export default function StockContent() {
               type="submit"
               className="rounded-full bg-[#6FA8F7] px-4 py-1.5 text-[9px] font-semibold text-white shadow-sm transition hover:bg-[#5F99EA]"
             >
-              Simpan Produk
+              {editingProduct ? "Simpan Perubahan" : "Simpan Produk"}
             </Button>
 
           </div>

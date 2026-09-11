@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import { useState, useSyncExternalStore } from "react";
 import type { SessionUser } from "../../lib/session";
+import { clearSession } from "../../lib/session";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -160,8 +161,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    localStorage.removeItem("cuanku_token");
-                    localStorage.removeItem("cuanku_user");
+                    clearSession();
                     router.push("/login");
                   }}
                   className="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50"

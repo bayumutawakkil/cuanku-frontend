@@ -3,7 +3,7 @@
 import { BriefcaseBusiness, LogOut, Settings, ShieldCheck, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSessionUser, saveSessionUser, type SessionUser } from "../lib/session";
+import { clearSession, getSessionUser, type SessionUser } from "../lib/session";
 
 const valueOrDash = (value?: string) => value || "-";
 
@@ -16,8 +16,7 @@ export default function ProfileContent() {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("cuanku_token");
-    saveSessionUser(null);
+    clearSession();
     router.push("/login");
   };
 

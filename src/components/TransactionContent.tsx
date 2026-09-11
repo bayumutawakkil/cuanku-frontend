@@ -238,8 +238,8 @@ export default function TransactionContent() {
       amount: Number(form.get("amount")),
     };
     try {
-      await apiRequest("/transaksi", {
-        method: "POST",
+      await apiRequest(`/transaksi${editingTransaction ? `/${editingTransaction.id}` : ""}`, {
+        method: editingTransaction ? "PUT" : "POST",
         body: JSON.stringify({
             jenis_transaksi: transaction.type,
             kategori: transaction.category,
@@ -272,6 +272,17 @@ export default function TransactionContent() {
     }
   };
 
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    if (!window.confirm("Hapus transaksi ini?")) return;
+
+    try {
+      await apiRequest(`/transaksi/${transaction.id}`, { method: "DELETE" });
+      setData((previous) => previous.filter((item) => item.id !== transaction.id));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Gagal menghapus transaksi.");
+    }
+  };
+
   return (
     <div className="w-full">
 
@@ -299,12 +310,6 @@ export default function TransactionContent() {
         </h2>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#6FA8F7] px-5 py-2.5 text-sm font-semibold text-[#356EBB] transition hover:bg-[#F1F7FF]">
-            <UploadCloud size={16} />
-            {importing ? "Mengimpor..." : "Impor XLSX"}
-            <input type="file" accept=".xlsx" className="hidden" onChange={handleImportInput} disabled={importing} />
-          </label>
 
           {/* SEARCH */}
           <div className="relative">
@@ -530,13 +535,7 @@ export default function TransactionContent() {
 
                       <button
                         type="button"
-                        onClick={() =>
-                          setData((prev) =>
-                            prev.filter(
-                              (x) => x.id !== t.id
-                            )
-                          )
-                        }
+                        onClick={() => void handleDeleteTransaction(t)}
                         className="rounded-lg p-1.5 text-red-500 transition hover:bg-red-50"
                         title="Hapus transaksi"
                       >
@@ -588,7 +587,7 @@ export default function TransactionContent() {
           setOpen(false);
           setEditingTransaction(null);
         }}
-        title="Tambah Transaksi Baru"
+        title={editingTransaction ? "Edit Transaksi" : "Tambah Transaksi Baru"}
         width="max-w-md"
       >
         <form onSubmit={addTransaction} className="-mt-5 space-y-4">

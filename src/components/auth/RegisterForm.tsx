@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { Mail, UserRound, AtSign, Building2, KeyRound, } from "lucide-react";
+import { Mail, UserRound, Building2, KeyRound, ArrowLeft } from "lucide-react";
 import InputField from "./InputField";
 import Button from "../ui/Button";
 import GoogleIcon from "../ui/GoogleIcon";
 import { apiRequest, unwrapObject } from "../../lib/api";
-import { saveSessionUser } from "../../lib/session";
+import { saveSession } from "../../lib/session";
 
 export default function RegisterForm() {
     const [name, setName] = useState("");
@@ -46,16 +46,16 @@ export default function RegisterForm() {
             const token = result.token ?? result.access_token;
 
             if (typeof token === "string") {
-                localStorage.setItem("cuanku_token", token);
+                saveSession(token, {
+                    nama_UMKM: String(result.nama_UMKM ?? (organization || name)),
+                    nama_lengkap: String(result.nama_lengkap ?? name),
+                    username: String(result.username ?? username),
+                    email,
+                }, true);
+                window.location.href = "/dashboard";
+                return;
             }
-            saveSessionUser({
-                nama_UMKM: String(result.nama_UMKM ?? (organization || name)),
-                nama_lengkap: String(result.nama_lengkap ?? name),
-                username: String(result.username ?? username),
-                email,
-            });
-
-            window.location.href = token ? "/dashboard" : "/login";
+            window.location.href = "/login";
         } catch (requestError) {
             setError(
                 requestError instanceof Error
