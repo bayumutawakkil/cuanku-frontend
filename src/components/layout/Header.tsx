@@ -1,12 +1,15 @@
 import { Bell, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getSessionUser, type SessionUser } from "../../lib/session";
+import { getSessionUser, SESSION_CHANGE_EVENT, type SessionUser } from "../../lib/session";
 
 export default function Header() {
   const [user, setUser] = useState<SessionUser>({});
 
   useEffect(() => {
-    setUser(getSessionUser());
+    const refreshUser = () => setUser(getSessionUser());
+    refreshUser();
+    window.addEventListener(SESSION_CHANGE_EVENT, refreshUser);
+    return () => window.removeEventListener(SESSION_CHANGE_EVENT, refreshUser);
   }, []);
 
   return (

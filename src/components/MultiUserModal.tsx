@@ -1,102 +1,61 @@
-import { X, Edit, Trash2 } from "lucide-react";
+"use client";
+
+import { BriefcaseBusiness, LogIn, Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "./ui/Button";
+import { getSavedAccounts, getSessionUser, SESSION_CHANGE_EVENT, type SavedAccount } from "../lib/session";
 
-type TeamMember = {
-  id: string | number;
-  name: string;
-  role: string;
-  access: string;
-};
+type MultiUserModalProps = { isOpen: boolean; onClose: () => void };
 
-type MultiUserModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  users?: TeamMember[];
-};
+export default function MultiUserModal({ isOpen, onClose }: MultiUserModalProps) {
+  const router = useRouter();
+  const [accounts, setAccounts] = useState<SavedAccount[]>([]);
+  const activeAccount = getSessionUser();
 
-export default function MultiUserModal({ isOpen, onClose, users = [] }: MultiUserModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const refreshAccounts = () => {
+      const current = getSessionUser();
+      const savedAccounts = getSavedAccounts();
+      if (current.email && !savedAccounts.some((account) => account.email === current.email)) {
+        savedAccounts.unshift({ id_user: current.id_user, nama_UMKM: current.nama_UMKM, nama_lengkap: current.nama_lengkap, email: current.email, username: current.username });
+      }
+      setAccounts(savedAccounts);
+    };
+    refreshAccounts();
+    window.addEventListener(SESSION_CHANGE_EVENT, refreshAccounts);
+    return () => window.removeEventListener(SESSION_CHANGE_EVENT, refreshAccounts);
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const switchAccount = (account: SavedAccount) => {
+    onClose();
+    if (account.email) sessionStorage.setItem("cuanku_login_email", account.email);
+    router.push("/login");
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#001229]/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-[640px] rounded-[24px] bg-white p-8 shadow-2xl">
+      <div className="w-full max-w-[560px] rounded-[24px] bg-white p-8 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-[18px] font-bold text-[#001229]">Manajemen Tim & Akses</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-slate-200 p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
-          >
-            <X size={18} strokeWidth={2.5} />
-          </button>
+          <div><h2 className="text-[18px] font-bold text-[#001229]">Pilih Akun</h2><p className="mt-1 text-sm text-slate-500">Setiap akun memiliki usaha dan data masing-masing.</p></div>
+          <button type="button" onClick={onClose} className="rounded-full border border-slate-200 p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600" aria-label="Tutup"><X size={18} strokeWidth={2.5} /></button>
         </div>
 
-        <div className="flex flex-col gap-5">
-          {users.length === 0 ? (
-            <p className="py-4 text-center text-sm text-slate-500">Belum ada data anggota tim.</p>
-          ) : (
-            users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between border-b border-slate-100 pb-5 last:border-0 last:pb-0"
-              >
-              <div className="flex w-[200px] items-center gap-4">
-                <div className="h-[42px] w-[42px] shrink-0 rounded-full bg-[#d9d9d9]" />
-                <span className="truncate text-[14px] font-bold text-[#001229]">
-                  {user.name}
-                </span>
-              </div>
-
-              <div className="flex w-[160px] justify-center">
-                <span className="rounded-full bg-[#eef4fb] px-4 py-1.5 text-[12px] font-bold text-[#1f3a5f]">
-                  {user.role}
-                </span>
-              </div>
-
-              <div className="flex w-[120px] justify-center">
-                <span className="text-[13px] font-bold text-[#001229]">
-                  {user.access}
-                </span>
-              </div>
-
-              <div className="flex w-[70px] items-center justify-end gap-3.5">
-                <button className="text-[#5a9aef] transition hover:text-[#4a89db]">
-                  <Edit size={18} strokeWidth={2} />
-                </button>
-                <button className="text-[#ff4c4c] transition hover:text-[#e63e3e]">
-                  <Trash2 size={18} strokeWidth={2} />
-                </button>
-              </div>
-            </div>
-            ))
-          )}
+        <div className="space-y-3">
+          {accounts.length === 0 ? <p className="py-4 text-center text-sm text-slate-500">Belum ada akun tersimpan.</p> : accounts.map((account) => {
+            const isActive = account.email === activeAccount.email;
+            return <button key={account.email ?? account.id_user} type="button" onClick={() => !isActive && switchAccount(account)} disabled={isActive} className="flex w-full items-center gap-4 rounded-2xl border border-slate-200 p-4 text-left transition hover:border-[#5a9aef] hover:bg-[#F4F9FF] disabled:cursor-default disabled:bg-[#F4F9FF]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e8f1fb] text-[#35598b]"><BriefcaseBusiness size={20} /></div>
+              <div className="min-w-0 flex-1"><p className="truncate font-bold text-[#001229]">{account.nama_UMKM ?? "Usaha belum diatur"}</p><p className="truncate text-sm text-slate-500">{account.nama_lengkap ?? account.email}</p><p className="truncate text-xs text-slate-400">{account.email}</p></div>
+              {isActive ? <span className="text-xs font-bold text-[#5a9aef]">Aktif</span> : <LogIn size={18} className="text-slate-400" />}
+            </button>;
+          })}
         </div>
 
-        <div className="mt-5 flex justify-end">
-          <button className="flex items-center gap-2 rounded-full border border-[#5a9aef] px-5 py-2.5 text-[13px] font-bold text-[#5a9aef] transition hover:bg-[#F4F9FF]">
-            + Tambah Pengguna
-          </button>
-        </div>
-
-        <div className="mt-10 flex items-center justify-end gap-3">
-          <Button
-            onClick={onClose}
-            variant="secondary"
-            size="md"
-            radius="full"
-            className="px-6 py-2.5"
-          >
-            Batal
-          </Button>
-          <Button
-            onClick={onClose}
-            size="md"
-            radius="full"
-            className="px-6 py-2.5 shadow-[0_8px_20px_rgba(90,154,239,0.25)] hover:shadow-[0_8px_20px_rgba(90,154,239,0.35)]"
-          >
-            Simpan Perubahan
-          </Button>
-        </div>
+        <div className="mt-6 flex justify-end gap-3"><Button type="button" variant="secondary" size="md" radius="full" onClick={onClose}>Tutup</Button><Button type="button" size="md" radius="full" onClick={() => router.push("/register")}><Plus size={16} /> Tambah Akun</Button></div>
       </div>
     </div>
   );

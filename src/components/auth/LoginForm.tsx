@@ -13,7 +13,12 @@ import { saveSession } from "../../lib/session";
 export default function LoginForm() {
   const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const savedEmail = sessionStorage.getItem("cuanku_login_email") ?? "";
+    sessionStorage.removeItem("cuanku_login_email");
+    return savedEmail;
+  });
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -98,7 +103,10 @@ export default function LoginForm() {
         <Button
           type="submit"
           disabled={loading}
-          className="bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-[0_8px_20px_rgba(37,99,235,0.35)] hover:scale-[1.01] hover:shadow-[0_10px_25px_rgba(37,99,235,0.45)] active:scale-[0.99]"
+          fullWidth
+          radius="full"
+          size="lg"
+          className="bg-[#5b9ef0] text-white shadow-[0_6px_20px_rgba(91,158,240,0.45)] hover:bg-[#4a8de0] hover:shadow-[0_8px_24px_rgba(91,158,240,0.55)] active:scale-[0.99]"
         >
           {loading ? "Memproses..." : "Masuk"}
         </Button>
@@ -108,7 +116,11 @@ export default function LoginForm() {
         <Button
           type="button"
           onClick={handleGoogleLogin}
-          className="mt-3 gap-2 border border-slate-200 bg-white/70 text-slate-700 shadow-md hover:bg-white hover:shadow-lg"
+          variant="outline"
+          fullWidth
+          radius="full"
+          size="lg"
+          className="mt-3"
         >
           <GoogleIcon />
           Masuk dengan akun Google

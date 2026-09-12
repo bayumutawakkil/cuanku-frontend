@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import { useState, useSyncExternalStore } from "react";
 import type { SessionUser } from "../../lib/session";
-import { clearSession } from "../../lib/session";
+import { clearSession, SESSION_CHANGE_EVENT } from "../../lib/session";
 import Button from "../ui/Button";
 import MultiUserModal from "../MultiUserModal";
 
@@ -16,10 +16,14 @@ type DashboardLayoutProps = {
 
 const subscribeToSession = (onStoreChange: () => void) => {
   window.addEventListener("storage", onStoreChange);
-  return () => window.removeEventListener("storage", onStoreChange);
+  window.addEventListener(SESSION_CHANGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(SESSION_CHANGE_EVENT, onStoreChange);
+  };
 };
 
-const getSessionSnapshot = () => window.localStorage.getItem("cuanku_user") ?? "";
+const getSessionSnapshot = () => window.localStorage.getItem("cuanku_user") ?? window.sessionStorage.getItem("cuanku_user") ?? "";
 const getServerSessionSnapshot = () => "";
 
 function parseSessionUser(snapshot: string): SessionUser {
@@ -212,14 +216,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <MultiUserModal
         isOpen={isMultiUserModalOpen}
         onClose={() => setIsMultiUserModalOpen(false)}
-        users={[
-          {
-            id: user.id_user || "owner",
-            name: user.nama_lengkap || user.email || "Pemilik",
-            role: "Pemilik",
-            access: "Akses Penuh",
-          },
-        ]}
       />
     </div>
   );

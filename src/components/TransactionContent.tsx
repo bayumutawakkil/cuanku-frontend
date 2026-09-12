@@ -71,14 +71,18 @@ export default function TransactionContent() {
     apiRequest<unknown>("/transaksi")
       .then((response) => {
         const transactions = unwrapList<Record<string, unknown>>(response, ["transactions", "transaksi", "items"]);
-        setData(transactions.map((item, index) => ({
+        setData(transactions.map((item, index) => {
+          const rawDate = String(item.date ?? item.tanggal ?? "");
+          return {
             id: Number(item.id ?? item.id_transaksi ?? index),
-            date: formatDisplayDate(String(item.date ?? item.tanggal ?? "")),
+            date: formatDisplayDate(rawDate),
+            rawDate,
             type: (item.type ?? item.transaction_type ?? item.jenis ?? item.jenis_transaksi) as Transaction["type"],
             category: String(item.category ?? item.kategori ?? "-"),
             note: String(item.note ?? item.description ?? item.catatan ?? item.keterangan ?? "-"),
             amount: Number(item.amount ?? item.nominal ?? item.jumlah ?? 0),
-          })));
+          };
+        }));
       })
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Gagal memuat transaksi."))
       .finally(() => setLoading(false));
@@ -154,6 +158,7 @@ export default function TransactionContent() {
         return {
           id: Date.now() + index,
           date: formatDisplayDate(date),
+          rawDate: date,
           type: String(typeValue) as Transaction["type"],
           category: String(categoryValue).trim(),
           note: String(noteValue).trim() || "-",
@@ -197,30 +202,9 @@ export default function TransactionContent() {
     setOpen(true);
   };
 
-  const formatDateForInput = (date: string) => {
-    const [day, month, year] = date.split(" ");
-
-    const months: Record<string, string> = {
-      Jan: "01",
-      Feb: "02",
-      Mar: "03",
-      Apr: "04",
-      Mei: "05",
-      Jun: "06",
-      Jul: "07",
-      Agu: "08",
-      Sep: "09",
-      Okt: "10",
-      Nov: "11",
-      Des: "12",
-    };
-
-    return months[month] ? `${year}-${months[month]}-${day.padStart(2, "0")}` : date;
-  };
-
   const dateRange = useMemo(() => {
     if (!data.length) return "Belum ada transaksi";
-    const dates = data.map((item) => new Date(item.date)).filter((date) => !Number.isNaN(date.getTime()));
+    const dates = data.map((item) => new Date(item.rawDate)).filter((date) => !Number.isNaN(date.getTime()));
     if (!dates.length) return "Semua tanggal";
     const first = new Date(Math.min(...dates.map((date) => date.getTime())));
     const last = new Date(Math.max(...dates.map((date) => date.getTime())));
@@ -231,10 +215,12 @@ export default function TransactionContent() {
     e.preventDefault();
 
     const form = new FormData(e.currentTarget);
+    const rawDate = String(form.get("date"));
 
     const transaction: Transaction = {
       id: editingTransaction?.id ?? Date.now(),
-      date: new Date(String(form.get("date"))).toLocaleDateString("id-ID", {day: "2-digit", month: "short", year: "numeric", }),
+      date: new Date(rawDate).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }),
+      rawDate,
       type: transactionType,
       category: String(form.get("category")),
       note: String(form.get("note")),
@@ -248,7 +234,7 @@ export default function TransactionContent() {
             kategori: transaction.category,
             jumlah: transaction.amount,
             keterangan: transaction.note,
-            tanggal: String(form.get("date")),
+            tanggal: rawDate,
         }),
       });
 
@@ -752,7 +738,7 @@ export default function TransactionContent() {
                 required
                 defaultValue={
                   editingTransaction
-                    ? formatDateForInput(editingTransaction.date)
+                    ? editingTransaction.rawDate
                     : ""
                 }
                 className="h-[29px] w-full rounded-lg bg-[#F1F5F9] px-3 pr-9 text-[11px] text-slate-700 outline-none focus:ring-2 focus:ring-[#6FA8F7]"

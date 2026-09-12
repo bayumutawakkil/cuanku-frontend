@@ -1,9 +1,10 @@
 "use client";
 
 import { BriefcaseBusiness, Camera, Pencil, RefreshCw, Settings, ShieldCheck, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { clearSession, getSessionUser, type SessionUser } from "../lib/session";
+import { apiRequest } from "../lib/api";
+import { clearSession, getSessionUser, saveSessionUser, SESSION_CHANGE_EVENT, type SessionUser } from "../lib/session";
 import Button from "./ui/Button";
 import MultiUserModal from "./MultiUserModal";
 
@@ -14,10 +15,31 @@ export default function ProfileContent() {
   const [user, setUser] = useState<SessionUser>({});
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMultiUserModalOpen, setIsMultiUserModalOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     setUser(getSessionUser());
+    const refreshUser = () => setUser(getSessionUser());
+    window.addEventListener(SESSION_CHANGE_EVENT, refreshUser);
+    return () => window.removeEventListener(SESSION_CHANGE_EVENT, refreshUser);
   }, []);
+
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSavingProfile(true);
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await apiRequest<{ data: SessionUser }>("/auth/profil", {
+        method: "PUT",
+        body: JSON.stringify(Object.fromEntries(formData.entries())),
+      });
+      setUser(response.data);
+      saveSessionUser(response.data);
+      setIsEditModalOpen(false);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const logout = () => {
     clearSession();
@@ -84,7 +106,7 @@ export default function ProfileContent() {
 
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#001229]/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-[500px] rounded-[24px] bg-white p-8 shadow-2xl">
+          <form onSubmit={saveProfile} className="w-full max-w-[500px] rounded-[24px] bg-white p-8 shadow-2xl">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-[#001229]">Edit Profil</h2>
               <button type="button" onClick={() => setIsEditModalOpen(false)} className="rounded-full border border-slate-200 p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600">
@@ -103,20 +125,24 @@ export default function ProfileContent() {
 
             <div className="mt-8 space-y-4">
               <div>
+                <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nama Usaha</label>
+                <input name="nama_UMKM" type="text" defaultValue={user.nama_UMKM ?? ""} required className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+              </div>
+              <div>
                 <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nama Lengkap</label>
-                <input type="text" defaultValue={user.nama_lengkap ?? user.nama_UMKM ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+                <input name="nama_lengkap" type="text" defaultValue={user.nama_lengkap ?? user.nama_UMKM ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
               </div>
               <div>
                 <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nama Pengguna</label>
-                <input type="text" defaultValue={user.username ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+                <input name="username" type="text" defaultValue={user.username ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
               </div>
               <div>
                 <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Email</label>
-                <input type="email" defaultValue={user.email ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+                <input name="email" type="email" defaultValue={user.email ?? ""} required className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
               </div>
               <div>
                 <label className="mb-2 block text-[13px] font-bold text-[#40536d]">Nomor Telepon</label>
-                <input type="text" defaultValue={user.nomor_telepon ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
+                <input name="nomor_telepon" type="text" defaultValue={user.nomor_telepon ?? ""} className="w-full rounded-xl bg-[#f4f7fb] px-4 py-3 text-sm font-semibold text-[#001229] outline-none transition focus:ring-2 focus:ring-[#5a9aef]/20" />
               </div>
             </div>
 
@@ -124,25 +150,17 @@ export default function ProfileContent() {
               <Button onClick={() => setIsEditModalOpen(false)} variant="secondary" size="lg" radius="full">
                 Batal
               </Button>
-              <Button onClick={() => setIsEditModalOpen(false)} size="lg" radius="full">
-                Simpan Perubahan
+              <Button type="submit" disabled={savingProfile} size="lg" radius="full">
+                {savingProfile ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
       <MultiUserModal
         isOpen={isMultiUserModalOpen}
         onClose={() => setIsMultiUserModalOpen(false)}
-        users={[
-          {
-            id: user.id_user || "owner",
-            name: user.nama_lengkap || user.email || "Pemilik",
-            role: "Pemilik",
-            access: "Akses Penuh",
-          },
-        ]}
       />
     </main>
   );

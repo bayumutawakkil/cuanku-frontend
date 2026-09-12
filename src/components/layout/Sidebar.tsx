@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getSessionUser, type SessionUser } from "../../lib/session";
+import { getSessionUser, SESSION_CHANGE_EVENT, type SessionUser } from "../../lib/session";
 
 const menuItems = [
   {
@@ -45,7 +45,10 @@ export default function Sidebar() {
   const [user, setUser] = useState<SessionUser>({});
 
   useEffect(() => {
-    setUser(getSessionUser());
+    const refreshUser = () => setUser(getSessionUser());
+    refreshUser();
+    window.addEventListener(SESSION_CHANGE_EVENT, refreshUser);
+    return () => window.removeEventListener(SESSION_CHANGE_EVENT, refreshUser);
   }, []);
 
   return (

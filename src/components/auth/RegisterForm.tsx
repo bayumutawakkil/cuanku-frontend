@@ -6,7 +6,7 @@ import { Mail, UserRound, Building2, KeyRound, ArrowLeft } from "lucide-react";
 import InputField from "./InputField";
 import Button from "../ui/Button";
 import GoogleIcon from "../ui/GoogleIcon";
-import { apiRequest, unwrapObject } from "../../lib/api";
+import { apiRequest } from "../../lib/api";
 import { saveSession } from "../../lib/session";
 
 export default function RegisterForm() {
@@ -31,7 +31,7 @@ export default function RegisterForm() {
         setLoading(true);
 
         try {
-            const response = await apiRequest<unknown>("/auth/daftar", {
+            const response = await apiRequest<{ token?: string; access_token?: string; user?: Record<string, unknown> }>("/auth/daftar", {
                 method: "POST",
                 body: JSON.stringify({
                     nama_UMKM: organization || name,
@@ -42,14 +42,15 @@ export default function RegisterForm() {
                 }),
             });
 
-            const result = unwrapObject(response);
-            const token = result.token ?? result.access_token;
+            const token = response.token ?? response.access_token;
+            const userFromServer = response.user ?? {};
 
             if (typeof token === "string") {
                 saveSession(token, {
-                    nama_UMKM: String(result.nama_UMKM ?? (organization || name)),
-                    nama_lengkap: String(result.nama_lengkap ?? name),
-                    username: String(result.username ?? username),
+                    id_user: userFromServer.id_user as string | undefined,
+                    nama_UMKM: String(userFromServer.nama_UMKM ?? organization ?? name),
+                    nama_lengkap: String(userFromServer.nama_lengkap ?? name),
+                    username: String(userFromServer.username ?? username),
                     email,
                 }, true);
                 window.location.href = "/dashboard";
@@ -87,7 +88,10 @@ export default function RegisterForm() {
                 <Button
                     type="button"
                     onClick={handleGoogleRegister}
-                    className="border border-slate-200 bg-white text-slate-800 shadow-md hover:bg-slate-50"
+                    variant="outline"
+                    fullWidth
+                    radius="full"
+                    size="lg"
                 >
                     <GoogleIcon />
                     Gunakan akun Google
@@ -157,7 +161,10 @@ export default function RegisterForm() {
                 <Button 
                     type="submit"
                     disabled={loading}
-                    className="bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-md hover:shadow-lg"
+                    fullWidth
+                    radius="full"
+                    size="lg"
+                    className="bg-[#5b9ef0] text-white shadow-[0_6px_20px_rgba(91,158,240,0.45)] hover:bg-[#4a8de0] hover:shadow-[0_8px_24px_rgba(91,158,240,0.55)] active:scale-[0.99]"
                 >
                     {loading ? "Mendaftarkan..." : "Daftar"}
                 </Button>
